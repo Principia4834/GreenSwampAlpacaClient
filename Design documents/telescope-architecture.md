@@ -1,0 +1,377 @@
+﻿# Telescope Integration Architecture
+
+## 1. Purpose
+This document defines the software architecture for the telescope integration capability specified in `telescope-requirements.md` (FR1-48, NFR49-65) and designed for testability per `telescope-test-strategy.md`. It refines the MVVM shape into concrete layers, contracts, and project structure, and confirms the design against current .NET 10 / Avalonia 12 architectural guidance (consulted via the Avalonia docs MCP and Microsoft Learn MCP) and against the real ASCOM client libraries and the real GreenSwampAlpacaServer codebase.
+
+Settings/configuration persistence remains out of scope (per the requirements doc, Constraints). Where the architecture must assume *something* about configuration (e.g. "a session is constructed with connection parameters"), this is flagged explicitly as a seam to be filled by the (future) settings design, not designed here.
+
+## 2. Sources Consulted
+- `telescope-requirements.md` and `telescope-test-strategy.md` (this session's approved baseline).
+- Avalonia official docs (via MCP): "Implementing dependency injection" (`Microsoft.Extensions.DependencyInjection` + `App.axaml.cs`), "How to: Implement common MVVM patterns" (`CommunityToolkit.Mvvm`), Avalonia expert rules (compiled bindings, `ObservableObject`, `[RelayCommand]`, no ReactiveUI, `Dispatcher.UIThread`).
+- Microsoft Learn (via MCP): `TimeProvider`/`FakeTimeProvider`, ASP.NET Core SignalR .NET client (`HubConnectionBuilder`, `WithAutomaticReconnect`), .NET Generic Host (`Microsoft.Extensions.Hosting`, `IHostedService`/`BackgroundService` lifecycle).
+- The actual client project (`GreenSwamp.Alpaca.Client.csproj`): `net10.0`, Avalonia 12.1.2, already references `ASCOM.AstrometryTools`, `ASCOM.Common.Components`, `ASCOM.Exception.Library`, `ASCOM.Tools` — but **not yet** `ASCOM.Alpaca.Components`, which was found to contain the official ASCOM-Initiative Alpaca REST client (`ASCOM.Alpaca.Clients.AlpacaTelescope`) and discovery components (`ASCOM.Alpaca.Discovery.Finder`/`AlpacaDiscovery`). This was confirmed by extracting and inspecting the package directly.
+- Reflection over `ASCOM.Alpaca.Components 4.0.0`: `AlpacaTelescope` implements `IAlpacaClientV2`, `IAscomDeviceV2`, `IAscomDevice`, `ITelescopeV4`, `ITelescopeV3`, `IDisposable`. `ASCOM.Common.ClientExtensions.ConnectAsync`/`DisconnectAsync` extension methods already implement the "call `Connect()`, poll `Connecting` until false" pattern for Platform 7 (V2+) devices.
+- The real `GreenSwampAlpacaServer` codebase: `ChartHub.cs`, `ChartDataService.cs`, `TelescopeStateService.cs`, `TelescopeStateModel.cs`, confirming exact SignalR payload shapes (see §6.4).
+
+## 3. Key Architectural Decisions (confirmed with stakeholder)
+These were raised as explicit decision points during this design pass and resolved as follows:
+
+1. **DI composition root: .NET Generic Host**, not a bare `ServiceCollection` built inline in `App.axaml.cs`. Rationale: each telescope session owns one or more long-running background loops (REST polling, SignalR connection) that benefit from `IHostedService`-style coordinated start/stop, plus centralized configuration/logging composition. The Avalonia UI thread and lifetime remain governed by `AppBuilder`/`IClassicDesktopStyleApplicationLifetime`; the Generic Host runs alongside it, not instead of it (see §7).
+2. **Alpaca REST provider is a thin wrapper around `ASCOM.Alpaca.Clients.AlpacaTelescope` and `ASCOM.Common.ClientExtensions`**, not a hand-rolled HTTP/JSON client. The project already references `ASCOM.Common.Components`; it must add `ASCOM.Alpaca.Components` (same publisher/version family, `net10.0`-targeted, MIT licensed) to obtain `AlpacaTelescope`, `AlpacaConfiguration`, and `ASCOM.Alpaca.Discovery.Finder`/`AlpacaDiscovery`. This directly satisfies FR10, FR12, and removes an entire hand-written protocol layer plus its testing burden (see §6.3).
+3. **Target interface is `ITelescopeV4`** (ASCOM Platform 7, per `https://ascom-standards.org/newdocs/telescope.html`), not `ITelescopeV3`. `AlpacaTelescope` already implements both; `ITelescopeV4` (via `IAscomDeviceV2`) adds `Connect()`/`Disconnect()`/`Connecting`/`DeviceState` alongside the V3 property/method surface. The internal Alpaca provider must code against `ITelescopeV4` + `IAscomDeviceV2`, not just V3, so connect/disconnect is asynchronous-native rather than emulated via the `Connected` property setter (see §6.3, §6.5).
+4. **GreenSwamp SignalR telemetry carries genuine RA/Dec/Alt-Az position data, not just raw axis steps.** Initial exploration of `ChartHub` found only axis-step chart data; the stakeholder clarified that `TelescopeStateService`'s underlying `TelescopeStateModel` (the source data `ChartDataService` taps) additionally carries `RightAscension`, `Declination`, `Altitude`, `Azimuth`, `ActualAxisX/Y`, `AppAxisX/Y` in addition to `AxisSteps`. **However, the existing `ChartHub`/`ChartDataService` SignalR surface is scoped specifically to charting and only ever broadcasts step-based `ChartPointDto`/`PulsePointDto` payloads (`ReceiveAxisPoint`, `ReceivePulsePoint`) — it does not currently broadcast RA/Dec/Alt-Az telemetry.** Using SignalR for genuine low-latency sky-coordinate telemetry (not just step/pulse charting) therefore requires a **new or extended GreenSwamp-specific SignalR surface** (a new hub, or new hub methods/groups on a broadcast of `TelescopeStateModel`-shaped position data) that does not exist today. This is documented as an assumption/dependency, not assumed away (see §6.4, §11).
+5. **Update delivery mechanism: plain C# events (`EventHandler<T>`)**, not `IObservable<T>`/Rx.NET, and not `INotifyPropertyChanged` on the session itself. Chosen for consistency with `CommunityToolkit.Mvvm` idioms already mandated by the Avalonia guidance, and to avoid introducing Rx.NET as a second reactive paradigm. §6.6 documents this choice's limitations explicitly (ordering/back-pressure/thread-marshaling responsibilities that events do not solve for free) and how the architecture compensates.
+
+## 4. Architectural Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ View (Avalonia .axaml)                                                   │
+│   - Visual composition only. Binds to ViewModel via compiled bindings.   │
+└───────────────────────────────┬───────────────────────────────────────┘
+								 │ DataContext (compiled bindings, x:DataType)
+┌───────────────────────────────▼───────────────────────────────────────┐
+│ ViewModel (CommunityToolkit.Mvvm, per tab)                                │
+│   TelescopeTabViewModel : ObservableObject                               │
+│   - [ObservableProperty] bindable position/state/capability fields       │
+│   - [RelayCommand] Connect/Disconnect/SlewTo/Jog/Stop/Park/Unpark/Track   │
+│   - Depends ONLY on ITelescopeSession (app-facing abstraction)            │
+│   - No Alpaca/SignalR/HTTP types, no polling logic, no dispatcher logic  │
+└───────────────────────────────┬───────────────────────────────────────┘
+								 │ ITelescopeSession (per-instance, DI-resolved via factory)
+┌───────────────────────────────▼───────────────────────────────────────┐
+│ Model — Application-Facing Abstraction Layer                             │
+│   ITelescopeSessionFactory  (DI singleton)                               │
+│   ITelescopeSession         (one per tab/instance; owns providers)        │
+│     - Connect/Disconnect/MoveAxis/Jog/SlewToCoordinatesAsync/...          │
+│     - PositionUpdated / StateUpdated / ConnectionStatusChanged events     │
+│     - Capabilities snapshot (transport + device capability union)        │
+└───────┬───────────────────────────────────────────────────┬───────────┘
+		│                                                     │
+┌───────▼───────────────────┐                     ┌───────────▼─────────────┐
+│ AlpacaTelescopeProvider     │                     │ GreenSwampSignalRProvider │
+│ (mandatory, all devices)    │                     │ (supplementary, opt-in)   │
+│  - Wraps ASCOM.Alpaca.       │                     │  - Wraps HubConnection    │
+│    Clients.AlpacaTelescope   │                     │    to GreenSwamp server   │
+│  - ITelescopeV4 surface       │                     │  - Position telemetry     │
+│  - Poll loop via TimeProvider │                     │    (future extended hub) │
+│  - ConnectAsync/DisconnectAsync│                    │  - Command dispatch      │
+│    (ASCOM.Common.ClientExtensions)│                 │    (future, not yet real)│
+└───────┬───────────────────┘                     └───────────┬─────────────┘
+		│ HTTP (Alpaca REST)                                    │ SignalR (WebSocket)
+┌───────▼───────────────────┐                     ┌───────────▼─────────────┐
+│ Any ASCOM Alpaca telescope   │                     │ GreenSwampAlpacaServer    │
+│ (3rd-party driver, ASCOM      │                     │ (ChartHub + future        │
+│  reference simulator, or       │                     │  position/command hub)   │
+│  GreenSwampAlpacaServer)        │                     └───────────────────────────┘
+└───────────────────────────┘
+```
+
+Layering rules (enforced by project references, see §10):
+- **View → ViewModel**: compiled bindings only, no code-behind business logic.
+- **ViewModel → Model abstraction**: constructor-injected `ITelescopeSessionFactory` / `ITelescopeSession` only. No `using ASCOM.*` or `using Microsoft.AspNetCore.SignalR.Client` in any ViewModel project.
+- **Model abstraction → Providers**: internal to the Model assembly; providers are not exposed to ViewModels.
+- **Providers → transport SDKs**: `AlpacaTelescopeProvider` depends on `ASCOM.Alpaca.Components`; `GreenSwampSignalRProvider` depends on `Microsoft.AspNetCore.SignalR.Client`. Neither dependency leaks upward.
+
+## 5. Project / Assembly Structure
+
+```
+GreenSwamp.Alpaca.Client.sln
+  GreenSwamp.Alpaca.Client                     (existing Avalonia app project)
+	- Generic Host bootstrap (Program.cs, App.axaml.cs)
+	- Views (.axaml) only
+
+  GreenSwamp.Alpaca.Client.ViewModels          (new)
+	- TelescopeTabViewModel, MainViewModel, etc.
+	- References: GreenSwamp.Alpaca.Telescope.Abstractions, CommunityToolkit.Mvvm
+	- Does NOT reference ASCOM.* or SignalR.Client
+
+  GreenSwamp.Alpaca.Telescope.Abstractions     (new)
+	- ITelescopeSession, ITelescopeSessionFactory, TelescopePosition,
+	  TelescopeState, TelescopeCapabilities, event-arg types
+	- No transport dependencies at all — pure contracts + DTOs
+	- Referenced by both ViewModels and the Model implementation project
+
+  GreenSwamp.Alpaca.Telescope.Model            (new)
+	- TelescopeSessionFactory, TelescopeSession (orchestrator)
+	- Providers/AlpacaTelescopeProvider (uses ASCOM.Alpaca.Components)
+	- Providers/GreenSwampSignalRProvider (uses Microsoft.AspNetCore.SignalR.Client)
+	- Reconciliation logic, capability detection, TimeProvider-based polling
+	- Implements GreenSwamp.Alpaca.Telescope.Abstractions
+
+  GreenSwamp.Alpaca.Themes                     (existing, unchanged)
+```
+
+This mirrors the test strategy's proposed test project layout (`...Tests`, `...IntegrationTests`, `...TestHarness` referencing these same assemblies) and satisfies NFR49-51 (maintainability: transport/protocol concerns fully separated from MVVM) and the test strategy's Level 2 requirement that ViewModel tests need only a fake `ITelescopeSession`, never a real provider.
+
+**Open question for user confirmation:** should `Abstractions` and `Model` be two assemblies (as shown, maximizing separation and letting a future non-Avalonia host reuse `Abstractions` alone) or one merged `GreenSwamp.Alpaca.Telescope` assembly (simpler solution, still fully decoupled from ViewModels via internal visibility)? The two-assembly split is recommended and used throughout this document, but this is confirmed at implementation-design stage, not fixed irrevocably here.
+
+## 6. The Application-Facing Abstraction
+
+### 6.1 `ITelescopeSessionFactory` (DI singleton)
+```csharp
+public interface ITelescopeSessionFactory
+{
+	ITelescopeSession Create(TelescopeConnectionDescriptor descriptor);
+}
+```
+- Registered as a DI singleton (FR6-7). Does not itself hold telescope state — purely a factory, satisfying the "no ambient/static state" constraint (Requirements §9).
+- `TelescopeConnectionDescriptor` is a minimal, immutable record carrying whatever a session needs to connect (host/port/device-number/transport hints). Its exact shape is intentionally left light here because **connection descriptor sourcing is a settings-design concern** (out of scope); the factory signature only commits to "some descriptor comes in, a session comes out."
+- ViewModels never call transport-specific constructors; they call `ITelescopeSessionFactory.Create(...)` once per tab (FR8, FR16-22).
+
+### 6.2 `ITelescopeSession` (one instance per tab, per connected telescope)
+```csharp
+public interface ITelescopeSession : IAsyncDisposable
+{
+	Guid InstanceId { get; }
+	TelescopeCapabilities Capabilities { get; }
+	TelescopeConnectionStatus Status { get; }
+
+	Task ConnectAsync(CancellationToken ct = default);
+	Task DisconnectAsync(CancellationToken ct = default);
+
+	Task SlewToCoordinatesAsync(double rightAscensionHours, double declinationDegrees, CancellationToken ct = default);
+	Task SlewToAltAzAsync(double azimuthDegrees, double altitudeDegrees, CancellationToken ct = default);
+	Task JogAsync(TelescopeAxis axis, double rateDegreesPerSecond, CancellationToken ct = default);
+	Task StopJogAsync(TelescopeAxis axis, CancellationToken ct = default);
+	Task AbortSlewAsync(CancellationToken ct = default);
+	Task SetTrackingAsync(bool enabled, CancellationToken ct = default);
+	Task ParkAsync(CancellationToken ct = default);
+	Task UnparkAsync(CancellationToken ct = default);
+
+	event EventHandler<TelescopePositionUpdatedEventArgs>? PositionUpdated;
+	event EventHandler<TelescopeStateUpdatedEventArgs>? StateUpdated;
+	event EventHandler<TelescopeConnectionStatusChangedEventArgs>? ConnectionStatusChanged;
+}
+```
+Design notes:
+- **Concepts, not protocol calls** (FR1-5): `JogAsync`/`StopJogAsync` are new application-level concepts with no 1:1 Alpaca REST method; internally they resolve to repeated/held `MoveAxis` calls (over whichever transport is fastest — FR30) rather than exposing `MoveAxis` raw semantics to the ViewModel.
+- **`TelescopeAxis`** is a small app-level enum (`RightAscension`/`Primary`, `Declination`/`Secondary`, and potentially `Tertiary`) — a thin re-export/mirror of `ASCOM.Common.DeviceInterfaces.TelescopeAxis`, defined in `Abstractions` so the ViewModel layer never references `ASCOM.Common` directly, even though the underlying enum values are identical. This is intentional protocol insulation, not accidental duplication.
+- **`IAsyncDisposable`**: disposal must await teardown of the REST polling loop and the SignalR connection cleanly (FR21, NFR63-65) — synchronous `Dispose` would either block or leave the loop running past disposal.
+- Every method takes a `CancellationToken` (test strategy §4, point 6).
+
+### 6.3 Alpaca REST Provider — internal, wraps the real ASCOM client
+```csharp
+internal sealed class AlpacaTelescopeProvider : IAsyncDisposable
+{
+	// Wraps ASCOM.Alpaca.Clients.AlpacaTelescope (which implements ITelescopeV4)
+	private readonly AlpacaTelescope _client;
+	...
+}
+```
+- **Do not hand-roll HTTP/JSON.** `ASCOM.Alpaca.Components` (confirmed present on nuget.org, MIT-licensed, ASCOM-Initiative-owned, `net10.0`-targeted, same publisher as the already-referenced `ASCOM.Common.Components`/`ASCOM.Tools`/`ASCOM.Exception.Library`) supplies `ASCOM.Alpaca.Clients.AlpacaTelescope`, which already implements `ITelescopeV4` end-to-end over HTTP, including retries, timeouts, and JSON casing tolerance. This must be added as a new `PackageReference` in `GreenSwamp.Alpaca.Telescope.Model.csproj`.
+- Connect/disconnect uses `ASCOM.Common.ClientExtensions.ConnectAsync`/`DisconnectAsync`, which already implement the ASCOM-recommended "call `Connect()`, poll `Connecting` until it returns false, with cancellation and timeout" pattern for Platform-7 (V2+) devices — this satisfies FR16-17 without reimplementing connect-polling logic.
+- **Position/state polling loop**: uses an injected `TimeProvider` (NFR55-57, test strategy §8) rather than `Task.Delay` directly, so Level 1 tests can advance a `FakeTimeProvider` deterministically. Poll cadence is a to-be-confirmed constant/setting (Open Item), default informed by the reference server's own 250ms internal refresh (`TelescopeStateService`) as a reasonable starting point, not a hard requirement.
+- **Discovery** (optional, forward-looking): `ASCOM.Alpaca.Discovery.Finder`/`AlpacaDiscovery` are available in the same package for a future "auto-discover devices on the LAN" feature; not required for FR1-48 but noted as a natural extension point aligned with FR15 (future transport/discovery additions without ViewModel changes).
+- **Capability detection** (FR14): reads standard `Can*` properties from `ITelescopeV4`/`ITelescopeV3` plus an Alpaca `management`/API-version or a GreenSwamp-specific marker (e.g. a custom `Action` string, or presence of a `/api/v1/telescope/{n}/greenswampinfo`-style extension, **mechanism TBD at implementation-design stage** — flagged as an explicit Open Item) to decide whether to also attempt a SignalR connection.
+
+### 6.4 GreenSwamp SignalR Provider — supplementary, opportunistic
+- Wraps `Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilder`, using `WithAutomaticReconnect()` (confirmed idiomatic via Microsoft Learn) for FR46-47 (reflect degraded/lost SignalR without losing the whole session).
+- **Critical, confirmed assumption (documented, not assumed away):** the *existing* `ChartHub` in `GreenSwampAlpacaServer` is scoped to charting and only broadcasts step-based `ChartPointDto`/`PulsePointDto` payloads (via `ReceiveAxisPoint`/`ReceivePulsePoint`) for `RaDecChart-{n}`/`PulseChart-{n}` groups — confirmed by direct inspection of `ChartHub.cs` and `ChartDataService.cs`. It intentionally continues to serve this charting-only role and is **not** the transport this architecture uses for low-latency sky-position telemetry.
+  - The underlying `TelescopeStateModel`/`TelescopeStateService` *does* already hold genuine `RightAscension`/`Declination`/`Altitude`/`Azimuth` (refreshed ~every 250ms) — so the *data* needed for low-latency position telemetry already exists server-side; it is just not yet broadcast over SignalR in that form.
+  - This architecture therefore depends on a **future GreenSwamp-specific SignalR surface** (a new hub, or new hub method(s)/group(s) added to a server-side service, broadcasting `TelescopeStateModel`-shaped position/state data, not just chart points) — a cross-repository dependency on `GreenSwampAlpacaServer`, tracked identically to the pre-existing "SignalR command dispatch doesn't exist yet" risk in the requirements doc (§11).
+  - Until that surface exists, `GreenSwampSignalRProvider` for position/state has **no real server counterpart to connect to**; the architecture defines the provider's shape and integration seam now (so the Model layer and tests are ready) but its live use is gated behind that future server capability. The existing `ChartHub` remains usable, unmodified, purely for optional chart-style visualizations of raw axis/pulse data if the UI wants that later — a distinct, secondary use case from telemetry-driven position display.
+- **Axis-step-to-sky-coordinate conversion is explicitly out of this architecture's responsibility.** Should a future need arise to derive RA/Dec from raw `ChartHub` step data directly (bypassing the future position hub), that requires mount-specific gearing/steps-per-degree data that a GreenSwamp-class driver does not yet expose over Alpaca. Per the stakeholder, a **future phase** of GreenSwamp-class drivers is expected to expose this settings data, at which point step-based conversion could become a second, independent data path. This architecture does not build speculative conversion logic against undefined gearing data; it documents the assumption and leaves an extension seam (see §11, Open Items) rather than a design gap.
+- Command dispatch over SignalR (FR13, FR30) remains gated on the pre-existing "no command hub yet" risk from the requirements doc; `GreenSwampSignalRProvider` defines the seam (an internal `ISignalRCommandChannel`-shaped capability, only activated when the server advertises command support) but has no real implementation to call until the server adds it.
+
+### 6.5 `TelescopeSession` (orchestrator, internal)
+- Owns one `AlpacaTelescopeProvider` (always) and, when the device is GreenSwamp-class and the future position hub is available, one `GreenSwampSignalRProvider` (opportunistically).
+- Implements FR41-43 reconciliation: prefers SignalR-pushed updates when fresh; falls back to REST-polled updates when SignalR is stale/absent; de-duplicates/orders by a monotonic sequence or `TimeProvider`-derived timestamp attached at ingestion (not the transport's own wall-clock, to avoid clock-skew issues between client and two different transports/servers). Exact reconciliation algorithm remains an Open Item (per requirements §12, test strategy §12) but the seam (a single ingestion point per instance, both providers feed into it, not the ViewModel) is fixed here.
+- Routes commands per FR30 (lowest-latency active transport per command) — initially this reduces to "always REST" until real SignalR command support exists (§6.4), but the routing decision point is isolated in `TelescopeSession` so adding a second real transport later does not touch ViewModels or `ITelescopeSession`'s public shape.
+
+### 6.6 Update Delivery: Plain C# Events — Rationale and Documented Limitations
+Per stakeholder decision, `ITelescopeSession` exposes plain `EventHandler<T>` events rather than `IObservable<T>` or an `ObservableObject`-based session. This is recorded here **with its trade-offs made explicit**, as requested:
+
+**Why events, here:**
+- Matches the mandated `CommunityToolkit.Mvvm` idiom already used for ViewModel properties/commands; no second reactive paradigm (Rx.NET) needs to be learned, tested, or version-pinned.
+- Lowest-ceremony option for a ViewModel to subscribe/unsubscribe (`session.PositionUpdated += OnPositionUpdated;` in a `partial void OnActivated()`-style hook, unsubscribed on deactivation/dispose).
+- Directly testable: Level 1/2 tests can subscribe and assert on raised events without needing an Rx test scheduler.
+
+**Documented limitations and how the architecture compensates (do not treat these as solved by "just using events"):**
+1. **No built-in back-pressure or coalescing.** If `AlpacaTelescopeProvider`'s poll loop and a future SignalR provider both raise `PositionUpdated` in quick succession, subscribers (ViewModels) receive every raised event, at whatever rate providers produce them. Mitigation: `TelescopeSession`'s reconciliation layer (§6.5) is responsible for **not raising** redundant/stale events in the first place (FR43) — the event mechanism itself does no filtering, so correctness here rests entirely on the orchestrator, not the transport.
+2. **No thread affinity guarantee.** Events can be raised from whatever thread the originating provider uses (a polling `Task`, or SignalR's own connection thread) — never assume the UI thread. Per the Avalonia expert rules, marshaling to the UI thread is the **View's/ViewModel's** responsibility (e.g. `Dispatcher.UIThread.Post(...)` at the point the ViewModel updates its `[ObservableProperty]` state), not the Model's. `ITelescopeSession` implementations must document (and this architecture mandates) that events are raised on arbitrary background threads, never the UI thread, so this responsibility is unambiguous.
+3. **Multicast delegate leaks are a real risk with per-tab instances.** Because `ITelescopeSession` is instance-based and potentially created/disposed repeatedly (tabs opening/closing, FR20), a ViewModel that forgets to unsubscribe on disposal leaks both the ViewModel and the session's providers. Mitigation: `ITelescopeSession` is `IAsyncDisposable`; its `DisposeAsync()` must itself clear all its own event subscriber lists (defensive) and the pattern of "ViewModel subscribes in constructor/activation, unsubscribes in its own dispose/deactivation" must be enforced by code review/analyzer convention, not by the language. This is called out explicitly as a manual discipline the events approach does not automate away (unlike `IObservable<T>.Subscribe` returning an `IDisposable` that composes more naturally with `CompositeDisposable`-style patterns).
+4. **Harder to compose/merge than `IObservable<T>`.** Combining "whichever of REST-poll-event or SignalR-push-event is newest" is exactly the kind of problem Rx's `Merge`/`CombineLatest` solve declaratively. Using plain events means this merge logic must be **hand-written** inside `TelescopeSession` (§6.5) rather than composed from operators. This is an accepted, explicit cost of the decision, not an oversight; if reconciliation logic proves awkward as hand-written event-handling code during implementation, revisiting this decision (e.g. wrapping only the *internal* provider-to-session boundary in `IObservable<T>`, while keeping the external `ITelescopeSession` surface as plain events) is a legitimate fallback, noted here as an Open Item rather than foreclosed.
+5. **Testability is good but not automatic.** Plain events are easy to assert against in unit tests (subscribe, trigger, assert), but ordering/timing assertions (test strategy FR43 coverage) require the test to control the event-raising order explicitly (e.g. via `FakeTimeProvider` ticks or manually invoking provider-internal hooks) — the test harness's "Scenario/event recorder" component (test strategy §6, item 7) is still necessary and does not become simpler just because events were chosen over `IObservable<T>`.
+
+## 7. Composition Root: Generic Host + Avalonia
+
+### 7.1 Why Generic Host over a bare `ServiceCollection`
+Avalonia's own official DI guidance (fetched via MCP) uses a bare `ServiceCollection`/`BuildServiceProvider()` inline in `App.axaml.cs`, which is sufficient for simple, stateless service graphs. This application's Model layer runs genuinely long-lived background work per telescope instance (REST polling loops, SignalR connections) that must start and stop deterministically and be coordinated with app shutdown — exactly the problem `Microsoft.Extensions.Hosting`'s `IHost`/`IHostedService` lifecycle exists to solve, and it additionally gives centralized, conventional configuration/logging composition for free. Per stakeholder decision (§3.1), the Generic Host is used.
+
+### 7.2 Structural shape
+```csharp
+// Program.cs
+public static class Program
+{
+	[STAThread]
+	public static void Main(string[] args)
+	{
+		var host = Host.CreateApplicationBuilder(args) is var builder
+			? ConfigureHost(builder).Build()
+			: throw new InvalidOperationException();
+
+		host.Start();   // starts any registered IHostedService (none required yet at Model layer;
+						// per-instance session lifetimes are owned by ITelescopeSessionFactory,
+						// NOT by a single app-wide IHostedService — see note below)
+
+		BuildAvaloniaApp(host.Services)
+			.StartWithClassicDesktopLifetime(args);
+
+		host.StopAsync().GetAwaiter().GetResult();
+	}
+
+	private static IHostBuilder ConfigureHost(HostApplicationBuilder builder)
+	{
+		builder.Services.AddTelescopeIntegration();   // ServiceCollection extension, Model layer
+		// future: builder.Services.AddSettings(), etc.
+		return builder;
+	}
+
+	public static AppBuilder BuildAvaloniaApp(IServiceProvider services)
+		=> AppBuilder.Configure(() => new App(services))
+			.UsePlatformDetect()
+			.WithInterFont()
+			.LogToTrace();
+}
+```
+```csharp
+// App.axaml.cs
+public partial class App : Application
+{
+	private readonly IServiceProvider _services;
+	public App(IServiceProvider services) => _services = services;
+
+	public override void OnFrameworkInitializationCompleted()
+	{
+		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+		{
+			var vm = _services.GetRequiredService<MainViewModel>();
+			desktop.MainWindow = new MainWindow { DataContext = vm };
+		}
+		base.OnFrameworkInitializationCompleted();
+	}
+}
+```
+**Important nuance, deliberately not glossed over:** individual telescope sessions are **not** registered as `IHostedService`s. `IHostedService` instances are singletons resolved once at host start — that model does not fit N dynamically created/disposed per-tab sessions (FR16-22). Instead:
+- `ITelescopeSessionFactory` is the only long-lived, host-registered singleton.
+- Each `ITelescopeSession` manages its own internal background work (e.g. a polling `Task` started in `ConnectAsync`, stopped in `DisconnectAsync`/`DisposeAsync`) using a `CancellationTokenSource` owned by the session itself, **not** the host's `IHostedService` mechanism.
+- The Generic Host's value here is DI composition, configuration, and logging — not lifetime management of per-instance sessions, which remains the Model abstraction's own responsibility (consistent with the instance-based constraint in Requirements §9).
+- On host/app shutdown, `MainViewModel` (or a top-level session registry) should proactively `DisposeAsync()` any still-open sessions before `host.StopAsync()` returns, so no orphaned polling loop survives process exit (NFR63-65).
+
+### 7.3 DI Registration Sketch
+```csharp
+public static class TelescopeIntegrationServiceCollectionExtensions
+{
+	public static IServiceCollection AddTelescopeIntegration(this IServiceCollection services)
+	{
+		services.AddSingleton(TimeProvider.System);
+		services.AddSingleton<ITelescopeSessionFactory, TelescopeSessionFactory>();
+		// ViewModels are transient/scoped-per-tab, resolved when a tab is opened,
+		// NOT singletons -- each tab gets its own MainViewModel-created child ViewModel
+		// and calls the factory itself rather than resolving a pre-built session from DI.
+		services.AddTransient<TelescopeTabViewModelFactory>();
+		return services;
+	}
+}
+```
+Note: `TelescopeTabViewModel` instances are **not** resolved directly from the root DI container per tab in the usual singleton/transient sense, because each needs a *specific* `TelescopeConnectionDescriptor` at creation time (a runtime value, not something DI naturally injects). The conventional pattern is a small `TelescopeTabViewModelFactory` (itself DI-registered, holding only the `ITelescopeSessionFactory` and other stable dependencies) with a `Create(TelescopeConnectionDescriptor)` method that `MainViewModel` calls when the user opens a new tab — this keeps DI usage idiomatic while still supporting N runtime-parameterized instances (FR7-8, FR18-22).
+
+## 8. MVVM Layer Detail
+
+### 8.1 ViewModel base shape (CommunityToolkit.Mvvm)
+```csharp
+public partial class TelescopeTabViewModel : ObservableObject, IAsyncDisposable
+{
+	private readonly ITelescopeSession _session;
+
+	[ObservableProperty] private double _rightAscensionHours;
+	[ObservableProperty] private double _declinationDegrees;
+	[ObservableProperty] private bool _isConnected;
+	[ObservableProperty] private bool _isSlewing;
+	[ObservableProperty] private bool _isTracking;
+	[ObservableProperty] private string? _statusMessage;
+	[ObservableProperty] private bool _isJogSupported;      // driven by Capabilities (FR36)
+
+	public TelescopeTabViewModel(ITelescopeSession session)
+	{
+		_session = session;
+		_session.PositionUpdated += OnPositionUpdated;
+		_session.StateUpdated += OnStateUpdated;
+		_session.ConnectionStatusChanged += OnConnectionStatusChanged;
+	}
+
+	[RelayCommand]
+	private async Task ConnectAsync(CancellationToken ct) => await _session.ConnectAsync(ct);
+
+	[RelayCommand(CanExecute = nameof(IsJogSupported))]
+	private async Task JogNorthAsync(CancellationToken ct) =>
+		await _session.JogAsync(TelescopeAxis.Declination, JogRate, ct);
+
+	private void OnPositionUpdated(object? sender, TelescopePositionUpdatedEventArgs e)
+		=> Dispatcher.UIThread.Post(() =>
+		{
+			RightAscensionHours = e.Position.RightAscensionHours;
+			DeclinationDegrees = e.Position.DeclinationDegrees;
+		});
+
+	public async ValueTask DisposeAsync()
+	{
+		_session.PositionUpdated -= OnPositionUpdated;
+		_session.StateUpdated -= OnStateUpdated;
+		_session.ConnectionStatusChanged -= OnConnectionStatusChanged;
+		await _session.DisposeAsync();
+	}
+}
+```
+This satisfies:
+- FR1-2 (depends only on `ITelescopeSession`).
+- FR23-30 (jog/slew/stop/park/tracking as commands, capability-gated per FR36 via `CanExecute`).
+- NFR60 (async commands, no UI-thread blocking).
+- The Avalonia expert rule that UI-thread marshaling belongs at the View/ViewModel boundary (`Dispatcher.UIThread.Post`), not inside the Model.
+- Test strategy Level 2 (a fake `ITelescopeSession` can be substituted trivially; no Avalonia dispatcher needed if the test asserts on `RightAscensionHours` post-event without going through the real dispatcher — tests should construct the ViewModel with a test-provided synchronization shim or assert against the property setter contract directly, an Open Item to formalize at implementation-design stage, see §11).
+
+### 8.2 Multi-instance / tabbed shape
+- `MainViewModel` holds an `ObservableCollection<TelescopeTabViewModel>`.
+- "Add tab" command asks `TelescopeTabViewModelFactory.Create(descriptor)` for a new `TelescopeTabViewModel` (which internally calls `ITelescopeSessionFactory.Create(descriptor)`).
+- "Close tab" command removes it from the collection and calls its `DisposeAsync()` — directly exercising FR20-22, NFR63-64.
+- No static/ambient telescope registry anywhere in this layer (Requirements §9 constraint) — the `MainViewModel`'s collection is the *only* place multiple instances are tracked, and it is itself an ordinary DI-resolved singleton-scoped ViewModel, not a static class.
+
+## 9. Traceability to Requirements
+| Requirement(s) | Architectural Element |
+|---|---|
+| FR1-5 (neutral abstraction) | `ITelescopeSession`/`Abstractions` assembly; no ASCOM/SignalR types cross into ViewModels |
+| FR6-9 (DI) | Generic Host + `AddTelescopeIntegration()`; `ITelescopeSessionFactory` singleton; `TelescopeTabViewModelFactory` |
+| FR10, FR12 (Alpaca baseline) | `AlpacaTelescopeProvider` wrapping `ASCOM.Alpaca.Clients.AlpacaTelescope` (`ITelescopeV4`) |
+| FR11, FR13 (GreenSwamp SignalR) | `GreenSwampSignalRProvider`; gated on future server-side position/command hub (§6.4, §11) |
+| FR14 (capability/transport detection) | `AlpacaTelescopeProvider` capability probe (mechanism TBD, §11) |
+| FR15 (future transports) | Provider seam under `TelescopeSession`; adding a provider does not change `ITelescopeSession` |
+| FR16-22 (instance/session lifecycle) | `ITelescopeSessionFactory.Create`, `IAsyncDisposable` sessions, per-tab ViewModel lifecycle (§8.2) |
+| FR23-29 (control operations) | `ITelescopeSession` command methods (§6.2) |
+| FR24 (jog/arrow) | `JogAsync`/`StopJogAsync`, capability-gated `IsJogSupported` (§8.1) |
+| FR30 (latency-based routing) | `TelescopeSession` command routing logic (§6.5) |
+| FR31-36 (state/capability reporting) | `TelescopeCapabilities`, `TelescopeConnectionStatus`, event args DTOs (§6.2, §6.6) |
+| FR37-43 (position/state updates, reconciliation) | `TelescopeSession` ingestion/reconciliation point (§6.5); events (§6.6) |
+| FR44-48 (error/availability) | `ConnectionStatusChanged`, degraded-state modeling in `TelescopeConnectionStatus` |
+| NFR49-51 (maintainability) | Assembly separation (§5), layering rules (§4) |
+| NFR52-54 (extensibility) | Provider seam (§6.3-6.4), factory-based instance creation |
+| NFR55-57 (testability) | `TimeProvider` injection, fake `ITelescopeSession` for Level 2, per test strategy |
+| NFR58-62 (latency) | Transport routing (§6.5), no added buffering in event delivery (§6.6) |
+| NFR63-65 (reliability) | `IAsyncDisposable` teardown discipline, per-instance `CancellationTokenSource` (§6.2, §7.2) |
+
+## 10. Testability Confirmation (cross-check against `telescope-test-strategy.md`)
+- **Level 1 (Model unit)**: `AlpacaTelescopeProvider`/`GreenSwampSignalRProvider` internal logic is testable by substituting `TimeProvider` and, where the real ASCOM client allows, an injectable `HttpMessageHandler`/`HubConnection` factory seam — confirmed compatible with `ASCOM.Alpaca.Clients.AlpacaTelescope`'s configuration-based construction (`AlpacaConfiguration`), which does not hard-code `HttpClient` creation inaccessibly (implementation-time verification needed — flagged as Open Item since this session did not exhaustively confirm `AlpacaTelescope`'s internal `HttpClient` is substitutable versus merely configurable).
+- **Level 2 (ViewModel unit)**: `TelescopeTabViewModel` depends only on `ITelescopeSession` — trivially fake-able, per §8.1.
+- **Level 3-6 (real reference servers, fault/latency proxy)**: unaffected by this architecture pass; `AlpacaTelescopeProvider` talks real Alpaca REST wire protocol (via the real ASCOM client library) to whatever real server/simulator sits behind the fault/latency proxy, exactly as the test strategy assumed.
+- **No new conflicts identified** between this architecture and the approved test strategy; the plain-events decision (§6.6) does add a firm requirement that the test harness's "Scenario/event recorder" component subscribes to `ITelescopeSession` events directly rather than an `IObservable<T>` stream, which the test strategy's harness description already accommodates generically ("capture the sequence of position/state updates emitted by a provider or instance").
+
+## 11. Open Items Requiring Implementation-Design-Stage Decisions
+- **GreenSwamp position/state SignalR surface does not exist yet.** This architecture assumes a *future* extension to `GreenSwampAlpacaServer` (new hub or new hub methods) broadcasting `TelescopeStateModel`-shaped RA/Dec/Alt-Az/state data, distinct from the existing chart-only `ChartHub`. Until that exists, `GreenSwampSignalRProvider`'s position/state path has no real counterpart to connect to and should be developed/tested against a temporary fake hub (per test strategy §6, item 6), with the real integration deferred to when `GreenSwampAlpacaServer` gains this capability. This is a cross-repository dependency, tracked identically to the existing "no SignalR command support" risk.
+- **Axis-step-to-sky-coordinate conversion for `ChartHub`-sourced data remains unsupported** until a future GreenSwamp-class driver phase exposes steps-per-degree/gearing settings data. No conversion logic is designed here; `ChartHub` remains usable only for its existing charting purpose in the interim.
+- **Exact capability/transport-detection mechanism (FR14)** — how a session determines "GreenSwamp-class, position hub available" vs. "generic Alpaca-only" — needs a concrete design (e.g. a custom Alpaca `Action`, a management-API extension, or explicit configuration) at implementation-design stage.
+- **Reconciliation algorithm details (FR43)** — the merge/staleness/ordering algorithm inside `TelescopeSession` is specified here only as "must exist as a single ingestion point," not algorithmically.
+- **Whether `Abstractions` and `Model` remain two assemblies or merge into one** (§5) — recommended as two but not finalized.
+- **`ITelescopeSession` internal HTTP/SignalR substitutability for Level 1 tests** — needs verification against `AlpacaTelescope`'s actual construction options (`AlpacaConfiguration` vs. constructor overloads) to confirm a fake transport can be substituted without spinning up real sockets.
+- **Whether ViewModel-level UI-thread marshaling (`Dispatcher.UIThread.Post`) needs a test-time shim** so Level 2 tests can assert on `[ObservableProperty]` values synchronously without a real Avalonia dispatcher — needs a small decision (e.g. inject a marshaling abstraction into the ViewModel base, or rely on `Dispatcher.UIThread` no-op behavior in a headless test host).
+- **Poll cadence and reconnect/backoff policy constants** — not fixed here; default informed by, but not bound to, the reference server's own ~250ms internal cadence.
+- **Discovery (`ASCOM.Alpaca.Discovery`) is available but not required** for the current requirement set; whether to build it into the connection-setup flow now or defer entirely to the settings-design phase is an open product decision, not an architectural blocker.

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="GreenSwamp.Alpaca.Client\GreenSwamp.Alpaca.Client.csproj" />
+  <Project Path="GreenSwamp.Alpaca.Themes\GreenSwamp.Alpaca.Themes.csproj" />
+</Solution>

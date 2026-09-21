@@ -1,0 +1,11 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Thickness x:Key="Theme.ControlPadding">14,8</Thickness>
+  <Thickness x:Key="Theme.CardPadding">16</Thickness>
+  <Thickness x:Key="Theme.InputPadding">12,8</Thickness>
+  <CornerRadius x:Key="Theme.CornerRadius.Small">4</CornerRadius>
+  <CornerRadius x:Key="Theme.CornerRadius.Medium">8</CornerRadius>
+  <CornerRadius x:Key="Theme.CornerRadius.Large">12</CornerRadius>
+  <Thickness x:Key="Theme.BorderThickness.Standard">1</Thickness>
+  <x:Double x:Key="Theme.ControlHeight.Medium">40</x:Double>
+</ResourceDictionary>

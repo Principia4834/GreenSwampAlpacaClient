@@ -1,0 +1,14 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Slider.theme-slider">
+    <Setter Property="Foreground" Value="{DynamicResource Theme.SliderTrackFillBrush}" />
+  </Style>
+  <Style Selector="Slider.theme-slider /template/ Border#TrackBackground">
+    <Setter Property="Background" Value="{DynamicResource Theme.SliderTrackBackgroundBrush}" />
+  </Style>
+  <Style Selector="Slider.theme-slider /template/ Thumb">
+    <Setter Property="Background" Value="{DynamicResource Theme.SliderThumbBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.SliderThumbBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{StaticResource Theme.BorderThickness.Standard}" />
+  </Style>
+</Styles>

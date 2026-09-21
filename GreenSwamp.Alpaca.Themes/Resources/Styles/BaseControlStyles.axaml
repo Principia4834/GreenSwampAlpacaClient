@@ -1,0 +1,223 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource Theme.WindowBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.WindowForegroundBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ForegroundBrush}" />
+  </Style>
+
+  <Style Selector="SelectableTextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ForegroundBrush}" />
+  </Style>
+
+  <Style Selector="Button">
+    <Setter Property="Background" Value="{DynamicResource Theme.ButtonBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ButtonForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.ButtonBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{StaticResource Theme.BorderThickness.Standard}" />
+    <Setter Property="CornerRadius" Value="{StaticResource Theme.CornerRadius.Small}" />
+    <Setter Property="Padding" Value="{StaticResource Theme.ControlPadding}" />
+    <Setter Property="MinHeight" Value="{StaticResource Theme.ControlHeight.Medium}" />
+  </Style>
+
+  <Style Selector="Button /template/ ContentPresenter">
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Theme.ButtonForegroundBrush}" />
+  </Style>
+
+  <Style Selector="Button:pointerover">
+    <Setter Property="Background" Value="{DynamicResource Theme.ButtonHoverBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ButtonHoverForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.ButtonHoverBorderBrush}" />
+  </Style>
+
+  <Style Selector="Button:pointerover /template/ ContentPresenter">
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Theme.ButtonHoverForegroundBrush}" />
+  </Style>
+
+  <Style Selector="Button:pressed">
+    <Setter Property="Background" Value="{DynamicResource Theme.ButtonPressedBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ButtonPressedForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.ButtonPressedBorderBrush}" />
+  </Style>
+
+  <Style Selector="Button:pressed /template/ ContentPresenter">
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Theme.ButtonPressedForegroundBrush}" />
+  </Style>
+
+  <Style Selector="Button:disabled">
+    <Setter Property="Background" Value="{DynamicResource Theme.ButtonDisabledBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ButtonDisabledForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.ButtonDisabledBorderBrush}" />
+  </Style>
+
+  <Style Selector="Button:disabled /template/ ContentPresenter">
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Theme.ButtonDisabledForegroundBrush}" />
+  </Style>
+
+  <Style Selector="TextBox, AutoCompleteBox, ComboBox, DatePicker, NumericUpDown">
+    <Setter Property="Background" Value="{DynamicResource Theme.InputBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.InputForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.InputBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{StaticResource Theme.BorderThickness.Standard}" />
+    <Setter Property="MinHeight" Value="{StaticResource Theme.ControlHeight.Medium}" />
+  </Style>
+
+  <Style Selector="TextBox, AutoCompleteBox, ComboBox, DatePicker">
+    <Setter Property="CornerRadius" Value="{StaticResource Theme.CornerRadius.Small}" />
+  </Style>
+
+  <Style Selector="TextBox">
+    <Setter Property="Padding" Value="{StaticResource Theme.InputPadding}" />
+  </Style>
+
+  <Style Selector="TextBox:pointerover, AutoCompleteBox:pointerover, ComboBox:pointerover, DatePicker:pointerover, NumericUpDown:pointerover">
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.InputHoverBorderBrush}" />
+  </Style>
+
+  <Style Selector="TextBox:focus, AutoCompleteBox:focus, ComboBox:focus, DatePicker:focus, NumericUpDown:focus">
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.InputFocusedBorderBrush}" />
+  </Style>
+
+  <Style Selector="TextBox:disabled, AutoCompleteBox:disabled, ComboBox:disabled, DatePicker:disabled, NumericUpDown:disabled">
+    <Setter Property="Background" Value="{DynamicResource Theme.InputDisabledBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.InputDisabledForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.InputDisabledBorderBrush}" />
+  </Style>
+
+  <Style Selector="ComboBoxItem">
+    <Setter Property="Background" Value="{DynamicResource Theme.PopupItemBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.PopupItemForegroundBrush}" />
+    <Setter Property="Padding" Value="{StaticResource Theme.MenuItemPadding}" />
+  </Style>
+
+  <Style Selector="ComboBoxItem:pointerover">
+    <Setter Property="Background" Value="{DynamicResource Theme.PopupItemHoverBackgroundBrush}" />
+  </Style>
+
+  <Style Selector="ComboBoxItem:selected">
+    <Setter Property="Background" Value="{DynamicResource Theme.PopupItemSelectedBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.PopupItemForegroundBrush}" />
+  </Style>
+
+  <Style Selector="ComboBox /template/ Popup">
+    <Setter Property="WindowManagerAddShadowHint" Value="False" />
+  </Style>
+
+  <Style Selector="ComboBox /template/ Border#PopupBorder">
+    <Setter Property="Background" Value="{DynamicResource Theme.PopupBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.PopupBorderBrush}" />
+  </Style>
+
+  <Style Selector="DatePicker /template/ Border#PopupBorder">
+    <Setter Property="Background" Value="{DynamicResource Theme.PopupBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.PopupBorderBrush}" />
+  </Style>
+
+  <Style Selector="CheckBox, RadioButton, ToggleSwitch, MenuItem">
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ForegroundBrush}" />
+  </Style>
+
+  <Style Selector="CheckBox:pointerover, RadioButton:pointerover, ToggleSwitch:pointerover, MenuItem:pointerover">
+    <Setter Property="Background" Value="{DynamicResource Theme.SurfaceAltBrush}" />
+  </Style>
+
+  <Style Selector="CheckBox /template/ Border, RadioButton /template/ Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.SelectionIndicatorBorderBrush}" />
+  </Style>
+
+  <Style Selector="CheckBox:checked /template/ Path, RadioButton:checked /template/ Ellipse">
+    <Setter Property="Fill" Value="{DynamicResource Theme.SelectionIndicatorBrush}" />
+  </Style>
+
+  <Style Selector="CheckBox:disabled /template/ Border, RadioButton:disabled /template/ Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.SelectionIndicatorDisabledBorderBrush}" />
+  </Style>
+
+  <Style Selector="CheckBox:disabled:checked /template/ Path, RadioButton:disabled:checked /template/ Ellipse">
+    <Setter Property="Fill" Value="{DynamicResource Theme.SelectionIndicatorDisabledBrush}" />
+  </Style>
+
+  <Style Selector="ToggleSwitch /template/ ContentPresenter#PART_OffContentPresenter, ToggleSwitch /template/ ContentPresenter#PART_OnContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ForegroundBrush}" />
+  </Style>
+
+  <Style Selector="ToggleSwitch /template/ Border#SwitchKnob">
+    <Setter Property="Background" Value="{DynamicResource Theme.SelectionIndicatorBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.SelectionIndicatorBorderBrush}" />
+  </Style>
+
+  <Style Selector="ToggleSwitch:disabled /template/ Border#SwitchKnob">
+    <Setter Property="Background" Value="{DynamicResource Theme.SelectionIndicatorDisabledBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.SelectionIndicatorDisabledBorderBrush}" />
+  </Style>
+
+  <Style Selector="MenuItem">
+    <Setter Property="Padding" Value="{StaticResource Theme.MenuItemPadding}" />
+  </Style>
+
+  <Style Selector="ProgressBar">
+    <Setter Property="Foreground" Value="{DynamicResource Theme.AccentBrush}" />
+    <Setter Property="Background" Value="{DynamicResource Theme.SurfaceAltBrush}" />
+  </Style>
+
+  <Style Selector="ProgressBar /template/ Border#PART_Track">
+    <Setter Property="Background" Value="{DynamicResource Theme.SurfaceAltBrush}" />
+  </Style>
+
+  <Style Selector="ProgressBar /template/ Border#PART_Indicator">
+    <Setter Property="Background" Value="{DynamicResource Theme.AccentBrush}" />
+  </Style>
+
+  <Style Selector="ListBox, TreeView">
+    <Setter Property="Background" Value="{DynamicResource Theme.SurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.BorderBrush}" />
+    <Setter Property="BorderThickness" Value="{StaticResource Theme.BorderThickness.Standard}" />
+  </Style>
+
+  <Style Selector="ListBoxItem, TreeViewItem">
+    <Setter Property="Padding" Value="{StaticResource Theme.ListItemPadding}" />
+  </Style>
+
+  <Style Selector="ListBoxItem:selected, TreeViewItem:selected">
+    <Setter Property="Background" Value="{DynamicResource Theme.AccentSubtleBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ForegroundBrush}" />
+  </Style>
+
+  <Style Selector="ListBoxItem:pointerover, TreeViewItem:pointerover">
+    <Setter Property="Background" Value="{DynamicResource Theme.SurfaceAltBrush}" />
+  </Style>
+
+  <Style Selector="Menu, ContextMenu">
+    <Setter Property="Background" Value="{DynamicResource Theme.SurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ForegroundBrush}" />
+  </Style>
+
+  <Style Selector="ScrollBar">
+    <Setter Property="Background" Value="{DynamicResource Theme.SurfaceAltBrush}" />
+  </Style>
+
+  <Style Selector="ScrollBar /template/ Thumb">
+    <Setter Property="Background" Value="{DynamicResource Theme.BorderStrongBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.BorderStrongBrush}" />
+    <Setter Property="CornerRadius" Value="{StaticResource Theme.CornerRadius.Pill}" />
+  </Style>
+
+  <Style Selector="ScrollBar:pointerover /template/ Thumb">
+    <Setter Property="Background" Value="{DynamicResource Theme.ForegroundMutedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.ForegroundMutedBrush}" />
+  </Style>
+
+  <Style Selector="Separator">
+    <Setter Property="Background" Value="{DynamicResource Theme.SeparatorBrush}" />
+  </Style>
+
+  <Style Selector="Expander">
+    <Setter Property="Background" Value="{DynamicResource Theme.SurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.BorderBrush}" />
+  </Style>
+</Styles>

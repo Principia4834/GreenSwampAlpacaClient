@@ -1,0 +1,24 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Tokens/Metrics.axaml" />
+    <ResourceInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Tokens/Typography.axaml" />
+    <ResourceInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Tokens/Primitives.Day.axaml" />
+    <ResourceInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Tokens/Primitives.Night.axaml" />
+    <ResourceInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Semantics/SemanticMetrics.axaml" />
+    <ResourceInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Semantics/SemanticTypography.axaml" />
+  </ResourceDictionary.MergedDictionaries>
+
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Semantics/SemanticBrushes.Day.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Semantics/SemanticBrushes.Night.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

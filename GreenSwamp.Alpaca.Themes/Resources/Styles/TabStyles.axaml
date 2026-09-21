@@ -1,0 +1,28 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="TabControl.theme-tabs">
+    <Setter Property="Background" Value="{DynamicResource Theme.TabStripBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.TabBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{StaticResource Theme.BorderThickness.Standard}" />
+  </Style>
+  <Style Selector="TabControl.theme-tabs TabItem">
+    <Setter Property="Background" Value="{DynamicResource Theme.TabBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.TabForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.TabBorderBrush}" />
+  </Style>
+  <Style Selector="TabControl.theme-tabs TabItem:pointerover">
+    <Setter Property="Background" Value="{DynamicResource Theme.TabHoverBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.TabHoverForegroundBrush}" />
+  </Style>
+  <Style Selector="TabControl.theme-tabs TabItem:selected">
+    <Setter Property="Background" Value="{DynamicResource Theme.TabSelectedBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.TabSelectedForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.TabSelectedBorderBrush}" />
+  </Style>
+  <Style Selector="TabControl.theme-tabs TabItem /template/ ContentPresenter">
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Theme.TabForegroundBrush}" />
+  </Style>
+  <Style Selector="TabControl.theme-tabs TabItem:selected /template/ ContentPresenter">
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Theme.TabSelectedForegroundBrush}" />
+  </Style>
+</Styles>

@@ -1,0 +1,16 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Border.theme-panel">
+    <Setter Property="Background" Value="{DynamicResource Theme.PanelBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.PanelBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{StaticResource Theme.BorderThickness.Standard}" />
+    <Setter Property="CornerRadius" Value="{StaticResource Theme.CornerRadius.Large}" />
+  </Style>
+  <Style Selector="Border.theme-card">
+    <Setter Property="Background" Value="{DynamicResource Theme.CardBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.CardBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{StaticResource Theme.BorderThickness.Standard}" />
+    <Setter Property="CornerRadius" Value="{StaticResource Theme.CornerRadius.Medium}" />
+    <Setter Property="Padding" Value="{StaticResource Theme.CardPadding}" />
+  </Style>
+</Styles>

@@ -1,0 +1,353 @@
+<!-- Themes.xaml -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- ========================================================= -->
+  <!--  GLOBAL TOKENS                                            -->
+  <!-- ========================================================= -->
+
+  <!-- Fluent-2 tokens -->
+  <Color x:Key="Fluent.PrimaryColor">#FF0F6CBD</Color>
+  <Color x:Key="Fluent.SecondaryColor">#FF005FB8</Color>
+  <Color x:Key="Fluent.AccentColor">#FFC83D95</Color>
+
+  <Color x:Key="Fluent.SurfaceLight">#FFFFFFFF</Color>
+  <Color x:Key="Fluent.SurfaceDark">#FF1C1C1C</Color>
+
+  <Color x:Key="Fluent.Neutral0">#FFF3F3F3</Color>
+  <Color x:Key="Fluent.Neutral1">#FFE5E5E5</Color>
+  <Color x:Key="Fluent.Neutral2">#FFD1D1D1</Color>
+  <Color x:Key="Fluent.Neutral3">#FFB3B3B3</Color>
+
+  <!-- Material-Mobile tokens (same brand colours, different usage) -->
+  <Color x:Key="Material.PrimaryColor">#FF0F6CBD</Color>
+  <Color x:Key="Material.SecondaryColor">#FF005FB8</Color>
+  <Color x:Key="Material.ErrorColor">#FFB3261E</Color>
+
+  <Color x:Key="Material.SurfaceLight">#FFFFFFFF</Color>
+  <Color x:Key="Material.SurfaceDark">#FF121212</Color>
+
+  <!-- Night mode tokens (astronomy) -->
+  <Color x:Key="Night.Background">#FF000000</Color>
+  <Color x:Key="Night.Foreground">#FFFF3B3B</Color>
+
+  <!-- Brushes -->
+  <SolidColorBrush x:Key="Fluent.PrimaryBrush" Color="{StaticResource Fluent.PrimaryColor}" />
+  <SolidColorBrush x:Key="Fluent.SecondaryBrush" Color="{StaticResource Fluent.SecondaryColor}" />
+  <SolidColorBrush x:Key="Fluent.AccentBrush" Color="{StaticResource Fluent.AccentColor}" />
+  <SolidColorBrush x:Key="Fluent.SurfaceBrush" Color="{StaticResource Fluent.SurfaceLight}" />
+  <SolidColorBrush x:Key="Fluent.SurfaceDarkBrush" Color="{StaticResource Fluent.SurfaceDark}" />
+  <SolidColorBrush x:Key="Fluent.BorderBrush" Color="{StaticResource Fluent.Neutral2}" />
+  <SolidColorBrush x:Key="Fluent.ForegroundBrush" Color="#FF1C1C1C" />
+
+  <SolidColorBrush x:Key="Material.PrimaryBrush" Color="{StaticResource Material.PrimaryColor}" />
+  <SolidColorBrush x:Key="Material.SecondaryBrush" Color="{StaticResource Material.SecondaryColor}" />
+  <SolidColorBrush x:Key="Material.ErrorBrush" Color="{StaticResource Material.ErrorColor}" />
+  <SolidColorBrush x:Key="Material.SurfaceBrush" Color="{StaticResource Material.SurfaceLight}" />
+  <SolidColorBrush x:Key="Material.SurfaceDarkBrush" Color="{StaticResource Material.SurfaceDark}" />
+  <SolidColorBrush x:Key="Material.BorderBrush" Color="#1F000000" />
+  <SolidColorBrush x:Key="Material.ForegroundBrush" Color="#FF121212" />
+
+  <SolidColorBrush x:Key="Night.BackgroundBrush" Color="{StaticResource Night.Background}" />
+  <SolidColorBrush x:Key="Night.ForegroundBrush" Color="{StaticResource Night.Foreground}" />
+
+  <!-- Corner radii -->
+  <CornerRadius x:Key="Fluent.ButtonCornerRadius">4</CornerRadius>
+  <CornerRadius x:Key="Fluent.PanelCornerRadius">6</CornerRadius>
+  <CornerRadius x:Key="Fluent.DialogCornerRadius">8</CornerRadius>
+
+  <CornerRadius x:Key="Material.ButtonCornerRadius">8</CornerRadius>
+  <CornerRadius x:Key="Material.CardCornerRadius">12</CornerRadius>
+  <CornerRadius x:Key="Material.SheetCornerRadius">16</CornerRadius>
+
+  <!-- Spacing -->
+  <Thickness x:Key="Fluent.ControlPadding">4,4</Thickness>
+  <Thickness x:Key="Fluent.PanelPadding">8,8</Thickness>
+  <Thickness x:Key="Material.ControlPadding">12,8</Thickness>
+  <Thickness x:Key="Material.CardPadding">16,16</Thickness>
+
+  <!-- ========================================================= -->
+  <!--  FLUENT-2 STYLES (DESKTOP-FIRST)                          -->
+  <!--  Apply via Classes="fluent"                               -->
+  <!-- ========================================================= -->
+
+  <!-- Fluent Button -->
+  <Style Selector="Button.fluent">
+    <Setter Property="Background" Value="{StaticResource Fluent.PrimaryBrush}" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="BorderBrush" Value="{StaticResource Fluent.BorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{StaticResource Fluent.ButtonCornerRadius}" />
+    <Setter Property="Padding" Value="{StaticResource Fluent.ControlPadding}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.15" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+      </Transitions>
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate TargetType="Button">
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Margin="{TemplateBinding Padding}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style.Resources>
+      <SolidColorBrush x:Key="Fluent.ButtonHoverBrush" Color="#FF0D5FA5" />
+      <SolidColorBrush x:Key="Fluent.ButtonPressedBrush" Color="#FF094777" />
+      <SolidColorBrush x:Key="Fluent.ButtonDisabledBrush" Color="#FFB3B3B3" />
+    </Style.Resources>
+    <Style.Triggers>
+      <Setter Property="Background"
+              Value="{StaticResource Fluent.ButtonHoverBrush}"
+              Selector="Button:pointerover.fluent" />
+      <Setter Property="Background"
+              Value="{StaticResource Fluent.ButtonPressedBrush}"
+              Selector="Button:pressed.fluent" />
+      <Setter Property="Background"
+              Value="{StaticResource Fluent.ButtonDisabledBrush}"
+              Selector="Button:disabled.fluent" />
+      <Setter Property="Foreground"
+              Value="#FF666666"
+              Selector="Button:disabled.fluent" />
+    </Style.Triggers>
+  </Style>
+
+  <!-- Fluent Panel (e.g., Border with class fluent-panel) -->
+  <Style Selector="Border.fluent-panel">
+    <Setter Property="Background" Value="{StaticResource Fluent.SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Fluent.BorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{StaticResource Fluent.PanelCornerRadius}" />
+    <Setter Property="Padding" Value="{StaticResource Fluent.PanelPadding}" />
+  </Style>
+
+  <!-- Fluent TabControl -->
+  <Style Selector="TabControl.fluent">
+    <Setter Property="Background" Value="{StaticResource Fluent.SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Fluent.BorderBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Template">
+      <ControlTemplate TargetType="TabControl">
+        <DockPanel>
+          <TabStrip DockPanel.Dock="Top"
+                    Items="{TemplateBinding Items}"
+                    SelectedItem="{TemplateBinding SelectedItem}">
+            <TabStrip.ItemTemplate>
+              <DataTemplate>
+                <Border Padding="12,4">
+                  <TextBlock Text="{Binding Header}" />
+                </Border>
+              </DataTemplate>
+            </TabStrip.ItemTemplate>
+          </TabStrip>
+          <ContentPresenter Content="{TemplateBinding SelectedContent}"
+                            Margin="8,8,8,8" />
+        </DockPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- Fluent Slider -->
+  <Style Selector="Slider.fluent">
+    <Setter Property="Foreground" Value="{StaticResource Fluent.AccentBrush}" />
+    <Setter Property="Template">
+      <ControlTemplate TargetType="Slider">
+        <Grid Margin="4">
+          <Rectangle Height="2"
+                     VerticalAlignment="Center"
+                     Fill="{StaticResource Fluent.BorderBrush}" />
+          <Thumb Width="12"
+                 Height="12"
+                 Background="{StaticResource Fluent.AccentBrush}"
+                 CornerRadius="6"
+                 HorizontalAlignment="Left"
+                 [!NOTE: bind to Value via attached property in code-behind or custom template as needed] />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- Fluent TextBox -->
+  <Style Selector="TextBox.fluent">
+    <Setter Property="Background" Value="{StaticResource Fluent.SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Fluent.BorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="4,2" />
+    <Setter Property="Foreground" Value="{StaticResource Fluent.ForegroundBrush}" />
+    <Style.Triggers>
+      <Setter Property="BorderBrush"
+              Value="{StaticResource Fluent.AccentBrush}"
+              Selector="TextBox:focus.fluent" />
+    </Style.Triggers>
+  </Style>
+
+  <!-- ========================================================= -->
+  <!--  MATERIAL-MOBILE STYLES (TOUCH-FIRST)                     -->
+  <!--  Apply via Classes="material-mobile"                      -->
+  <!-- ========================================================= -->
+
+  <!-- Material Button (Filled) -->
+  <Style Selector="Button.material-mobile">
+    <Setter Property="Background" Value="{StaticResource Material.PrimaryBrush}" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{StaticResource Material.ButtonCornerRadius}" />
+    <Setter Property="Padding" Value="{StaticResource Material.ControlPadding}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.2" />
+        <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
+      </Transitions>
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate TargetType="Button">
+        <Border Background="{TemplateBinding Background}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Margin="{TemplateBinding Padding}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style.Resources>
+      <SolidColorBrush x:Key="Material.ButtonHoverBrush" Color="#FF156FCC" />
+      <SolidColorBrush x:Key="Material.ButtonPressedBrush" Color="#FF0D5FA5" />
+      <SolidColorBrush x:Key="Material.ButtonDisabledBrush" Color="#61000000" />
+    </Style.Resources>
+    <Style.Triggers>
+      <Setter Property="Background"
+              Value="{StaticResource Material.ButtonHoverBrush}"
+              Selector="Button:pointerover.material-mobile" />
+      <Setter Property="Background"
+              Value="{StaticResource Material.ButtonPressedBrush}"
+              Selector="Button:pressed.material-mobile" />
+      <Setter Property="Background"
+              Value="{StaticResource Material.ButtonDisabledBrush}"
+              Selector="Button:disabled.material-mobile" />
+      <Setter Property="Foreground"
+              Value="#B3FFFFFF"
+              Selector="Button:disabled.material-mobile" />
+    </Style.Triggers>
+  </Style>
+
+  <!-- Material Card (Border with class material-card) -->
+  <Style Selector="Border.material-card">
+    <Setter Property="Background" Value="{StaticResource Material.SurfaceBrush}" />
+    <Setter Property="CornerRadius" Value="{StaticResource Material.CardCornerRadius}" />
+    <Setter Property="Padding" Value="{StaticResource Material.CardPadding}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Material.BorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Effect">
+      <Setter.Value>
+        <DropShadowEffect BlurRadius="8"
+                          Opacity="0.18"
+                          Color="#80000000" />
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Material Bottom Navigation (TabControl with class material-bottom-nav) -->
+  <Style Selector="TabControl.material-bottom-nav">
+    <Setter Property="Background" Value="{StaticResource Material.SurfaceBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Template">
+      <ControlTemplate TargetType="TabControl">
+        <Grid>
+          <ContentPresenter Content="{TemplateBinding SelectedContent}"
+                            Margin="0,0,0,56" />
+          <Border Background="{StaticResource Material.SurfaceDarkBrush}"
+                  Height="56"
+                  VerticalAlignment="Bottom">
+            <TabStrip Items="{TemplateBinding Items}"
+                      SelectedItem="{TemplateBinding SelectedItem}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Center">
+              <TabStrip.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Orientation="Vertical"
+                              HorizontalAlignment="Center"
+                              Margin="16,4">
+                    <Path Data="{Binding IconGeometry}"
+                          Fill="White"
+                          Width="24"
+                          Height="24" />
+                    <TextBlock Text="{Binding Header}"
+                               Foreground="White"
+                               FontSize="11"
+                               Margin="0,2,0,0"
+                               HorizontalAlignment="Center" />
+                  </StackPanel>
+                </DataTemplate>
+              </TabStrip.ItemTemplate>
+            </TabStrip>
+          </Border>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- Material TextBox -->
+  <Style Selector="TextBox.material-mobile">
+    <Setter Property="Background" Value="{StaticResource Material.SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Material.BorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="Foreground" Value="{StaticResource Material.ForegroundBrush}" />
+    <Setter Property="MinHeight" Value="48" />
+    <Style.Triggers>
+      <Setter Property="BorderBrush"
+              Value="{StaticResource Material.PrimaryBrush}"
+              Selector="TextBox:focus.material-mobile" />
+    </Style.Triggers>
+  </Style>
+
+  <!-- Material Slider -->
+  <Style Selector="Slider.material-mobile">
+    <Setter Property="Foreground" Value="{StaticResource Material.PrimaryBrush}" />
+    <Setter Property="Template">
+      <ControlTemplate TargetType="Slider">
+        <Grid Margin="8">
+          <Rectangle Height="4"
+                     VerticalAlignment="Center"
+                     Fill="#33000000"
+                     RadiusX="2"
+                     RadiusY="2" />
+          <Thumb Width="20"
+                 Height="20"
+                 Background="{StaticResource Material.PrimaryBrush}"
+                 CornerRadius="10"
+                 HorizontalAlignment="Left"
+                 [!NOTE: bind to Value via custom template or code-behind] />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- ========================================================= -->
+  <!--  NIGHT MODE OVERRIDES (APPLY VIA Classes="night")         -->
+  <!-- ========================================================= -->
+
+  <Style Selector="* .night">
+    <Setter Property="Background" Value="{StaticResource Night.BackgroundBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource Night.ForegroundBrush}" />
+  </Style>
+
+</ResourceDictionary>

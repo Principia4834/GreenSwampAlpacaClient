@@ -1,0 +1,62 @@
+<!-- TABS -->
+<Styles xmlns="https://github.com/avaloniaui">
+
+  <!-- FLUENT TABS -->
+  <Style Selector="TabControl.fluent">
+    <Setter Property="Background" Value="{StaticResource Fluent.SurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Fluent.BorderBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Template">
+      <ControlTemplate TargetType="TabControl">
+        <DockPanel>
+          <TabStrip DockPanel.Dock="Top"
+                    Items="{TemplateBinding Items}"
+                    SelectedItem="{TemplateBinding SelectedItem}">
+            <TabStrip.ItemTemplate>
+              <DataTemplate>
+                <Border Padding="12,4">
+                  <TextBlock Text="{Binding Header}" />
+                </Border>
+              </DataTemplate>
+            </TabStrip.ItemTemplate>
+          </TabStrip>
+          <ContentPresenter Content="{TemplateBinding SelectedContent}" Margin="8" />
+        </DockPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- MATERIAL-MOBILE BOTTOM TABS -->
+  <Style Selector="TabControl.material-bottom-nav">
+    <Setter Property="Background" Value="{StaticResource Material.SurfaceBrush}" />
+    <Setter Property="Template">
+      <ControlTemplate TargetType="TabControl">
+        <Grid>
+          <ContentPresenter Content="{TemplateBinding SelectedContent}" Margin="0,0,0,56" />
+          <Border Background="{StaticResource Material.SurfaceDarkBrush}" Height="56" VerticalAlignment="Bottom">
+            <TabStrip Items="{TemplateBinding Items}"
+                      SelectedItem="{TemplateBinding SelectedItem}">
+              <TabStrip.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="16,4">
+                    <Path Data="{Binding IconGeometry}" Fill="White" Width="24" Height="24" />
+                    <TextBlock Text="{Binding Header}" Foreground="White" FontSize="11" Margin="0,2,0,0" />
+                  </StackPanel>
+                </DataTemplate>
+              </TabStrip.ItemTemplate>
+            </TabStrip>
+          </Border>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- NIGHT TABS -->
+  <Style Selector="TabControl.night">
+    <Setter Property="Background" Value="Black" />
+    <Setter Property="Foreground" Value="#FFFF3B3B" />
+    <Setter Property="BorderBrush" Value="#FFFF3B3B" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+
+</Styles>

@@ -1,0 +1,17 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="TextBlock.theme-title">
+    <Setter Property="FontSize" Value="{StaticResource Theme.TitleFontSize}" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.HeadingForegroundBrush}" />
+  </Style>
+  <Style Selector="TextBlock.theme-subtitle">
+    <Setter Property="FontSize" Value="{StaticResource Theme.FontSize.Subtitle}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.ForegroundMutedBrush}" />
+  </Style>
+  <Style Selector="TextBlock.theme-section-title">
+    <Setter Property="FontSize" Value="{StaticResource Theme.SectionTitleFontSize}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.HeadingForegroundBrush}" />
+  </Style>
+</Styles>

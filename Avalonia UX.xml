@@ -1,0 +1,253 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:MountControlApp"
+        x:Class="MountControlApp.MainWindow"
+        Width="1400" Height="900"
+        Title="Mount Control – Workspace">
+
+    <DockPanel>
+
+        <!-- Top-level workspace tabs -->
+        <TabControl DockPanel.Dock="Top"
+                    Items="{Binding WorkspaceTabs}"
+                    SelectedItem="{Binding SelectedWorkspaceTab}">
+            <!-- Mount Control Tab -->
+            <TabItem Header="Mount Control">
+                <local:MountControlView />
+            </TabItem>
+
+            <!-- Settings Explorer Tab -->
+            <TabItem Header="Settings">
+                <local:SettingsExplorerView />
+            </TabItem>
+
+            <!-- Logs Tab -->
+            <TabItem Header="Logs">
+                <local:LogsView />
+            </TabItem>
+        </TabControl>
+
+    </DockPanel>
+</Window>
+
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="MountControlApp.Views.MountControlView">
+
+    <DockPanel>
+
+        <!-- Mount selector bar -->
+        <StackPanel DockPanel.Dock="Top"
+                    Orientation="Horizontal"
+                    Background="#222"
+                    Padding="10"
+                    Spacing="10">
+            <ComboBox Width="220"
+                      Items="{Binding MountProfiles}"
+                      SelectedItem="{Binding SelectedMount}" />
+            <Button Content="Connect" Command="{Binding ConnectCommand}" />
+            <Button Content="Disconnect" Command="{Binding DisconnectCommand}" />
+            <Button Content="Open Guiding Window"
+                    Command="{Binding OpenGuidingWindowCommand}" />
+            <Button Content="Open 3D View Window"
+                    Command="{Binding OpenThreeDWindowCommand}" />
+        </StackPanel>
+
+        <!-- Bottom guiding panel (inline) -->
+        <Expander DockPanel.Dock="Bottom"
+                  Header="Guiding (Inline)"
+                  IsExpanded="False"
+                  Background="#1A1A1A"
+                  Padding="8">
+            <Border Background="#111" Padding="8" CornerRadius="4">
+                <ContentControl Content="{Binding GuidingInlineView}" />
+            </Border>
+        </Expander>
+
+        <!-- Main 3-column responsive layout -->
+        <Grid ColumnDefinitions="280,5,*,5,340">
+
+            <!-- Status Panel -->
+            <StackPanel Grid.Column="0"
+                        Background="#1A1A1A"
+                        Padding="10"
+                        Spacing="8">
+                <TextBlock Text="Status" FontSize="18" FontWeight="Bold" />
+                <TextBlock Text="RA:" />
+                <TextBlock Text="{Binding RA}" />
+                <TextBlock Text="Dec:" />
+                <TextBlock Text="{Binding Dec}" />
+                <TextBlock Text="Az:" />
+                <TextBlock Text="{Binding Az}" />
+                <TextBlock Text="Alt:" />
+                <TextBlock Text="{Binding Alt}" />
+                <TextBlock Text="LHA:" />
+                <TextBlock Text="{Binding LHA}" />
+                <TextBlock Text="Tracking:" />
+                <ToggleSwitch IsChecked="{Binding Tracking}" />
+                <TextBlock Text="Connection:" />
+                <TextBlock Text="{Binding ConnectionState}" />
+            </StackPanel>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1"
+                          ResizeDirection="Columns"
+                          Background="#333"
+                          Width="5" />
+
+            <!-- Movement Panel -->
+            <StackPanel Grid.Column="2"
+                        Background="#111"
+                        Padding="10"
+                        Spacing="12">
+                <TextBlock Text="Movement" FontSize="18" FontWeight="Bold" />
+
+                <!-- Slew Pad -->
+                <ContentControl Content="{Binding SlewPadView}" />
+
+                <!-- Speed -->
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="Speed:" />
+                    <ComboBox Width="120"
+                              Items="{Binding SlewSpeeds}"
+                              SelectedItem="{Binding SelectedSlewSpeed}" />
+                </StackPanel>
+
+                <!-- STOP -->
+                <Button Content="STOP"
+                        Background="#AA0000"
+                        Foreground="White"
+                        FontSize="20"
+                        Command="{Binding StopCommand}" />
+
+                <!-- GoTo -->
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="GoTo Target" FontWeight="Bold" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="RA:" />
+                        <TextBox Width="120" Text="{Binding GoToRA}" />
+                        <TextBlock Text="Dec:" />
+                        <TextBox Width="120" Text="{Binding GoToDec}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,8,0,0">
+                        <Button Content="GoTo" Command="{Binding GoToCommand}" />
+                        <Button Content="Sync" Command="{Binding SyncCommand}" />
+                        <Button Content="Copy" Command="{Binding CopyCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="3"
+                          ResizeDirection="Columns"
+                          Background="#333"
+                          Width="5" />
+
+            <!-- Advanced Panel -->
+            <ScrollViewer Grid.Column="4"
+                          Background="#1A1A1A"
+                          Padding="10">
+                <StackPanel Spacing="10">
+
+                    <TextBlock Text="Advanced" FontSize="18" FontWeight="Bold" />
+
+                    <Expander Header="Flip Options" IsExpanded="False">
+                        <StackPanel Spacing="6">
+                            <CheckBox Content="Flip RA/Az" IsChecked="{Binding FlipRA}" />
+                            <CheckBox Content="Flip Dec/Alt" IsChecked="{Binding FlipDec}" />
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="Anti-Backlash" IsExpanded="False">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="RA/Az Backlash:" />
+                            <Slider Minimum="0" Maximum="100" Value="{Binding BacklashRA}" />
+                            <TextBlock Text="Dec/Alt Backlash:" />
+                            <Slider Minimum="0" Maximum="100" Value="{Binding BacklashDec}" />
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="Axis Dials" IsExpanded="False">
+                        <StackPanel>
+                            <ContentControl Content="{Binding RADialView}" />
+                            <ContentControl Content="{Binding DecDialView}" />
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="3D View (Inline)" IsExpanded="False">
+                        <Border Background="#000" Height="260">
+                            <ContentControl Content="{Binding ThreeDInlineView}" />
+                        </Border>
+                    </Expander>
+
+                </StackPanel>
+            </ScrollViewer>
+
+        </Grid>
+
+    </DockPanel>
+</UserControl>
+
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="MountControlApp.Views.SettingsExplorerView">
+
+    <DockPanel>
+
+        <!-- Left navigation tree -->
+        <TreeView DockPanel.Dock="Left"
+                  Width="260"
+                  Items="{Binding SettingsTree}"
+                  SelectedItem="{Binding SelectedSettingsNode}">
+            <!-- Hierarchical data template via DataTemplates in App.axaml or here -->
+        </TreeView>
+
+        <!-- Right content -->
+        <ContentControl Content="{Binding SelectedSettingsPage}" />
+
+    </DockPanel>
+</UserControl>
+
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MountControlApp.GuidingWindow"
+        Width="900" Height="600"
+        Title="Guiding – Device">
+
+    <DockPanel>
+
+        <StackPanel DockPanel.Dock="Top"
+                    Orientation="Horizontal"
+                    Padding="8"
+                    Spacing="8"
+                    Background="#222">
+            <TextBlock Text="Guiding" FontSize="18" FontWeight="Bold" />
+            <TextBlock Text="{Binding CurrentDeviceName}" Margin="10,0,0,0" />
+        </StackPanel>
+
+        <Grid RowDefinitions="*,Auto">
+
+            <!-- Guiding chart / controls -->
+            <ContentControl Grid.Row="0" Content="{Binding GuidingView}" />
+
+            <!-- Status bar -->
+            <StackPanel Grid.Row="1"
+                        Orientation="Horizontal"
+                        Background="#111"
+                        Padding="6"
+                        Spacing="10">
+                <TextBlock Text="RMS:" />
+                <TextBlock Text="{Binding RMS}" />
+                <TextBlock Text="Last Pulse:" Margin="20,0,0,0" />
+                <TextBlock Text="{Binding LastPulse}" />
+            </StackPanel>
+
+        </Grid>
+
+    </DockPanel>
+</Window>
+
+

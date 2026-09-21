@@ -1,0 +1,47 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Button.theme-accent">
+    <Setter Property="Background" Value="{DynamicResource Theme.AccentButtonBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.AccentButtonForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.AccentButtonBorderBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="Button.theme-accent /template/ ContentPresenter">
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Theme.AccentButtonForegroundBrush}" />
+  </Style>
+
+  <Style Selector="Button.theme-accent:pointerover">
+    <Setter Property="Background" Value="{DynamicResource Theme.AccentButtonHoverBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.AccentButtonHoverForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.AccentButtonHoverBorderBrush}" />
+  </Style>
+
+  <Style Selector="Button.theme-accent:pointerover /template/ ContentPresenter">
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Theme.AccentButtonHoverForegroundBrush}" />
+  </Style>
+
+  <Style Selector="Button.theme-accent:pressed">
+    <Setter Property="Background" Value="{DynamicResource Theme.AccentButtonPressedBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.AccentButtonPressedForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.AccentButtonPressedBorderBrush}" />
+  </Style>
+
+  <Style Selector="Button.theme-accent:pressed /template/ ContentPresenter">
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Theme.AccentButtonPressedForegroundBrush}" />
+  </Style>
+
+  <Style Selector="Button.theme-accent:disabled">
+    <Setter Property="Background" Value="{DynamicResource Theme.AccentButtonDisabledBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Theme.AccentButtonDisabledForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Theme.AccentButtonDisabledBorderBrush}" />
+  </Style>
+
+  <Style Selector="Button.theme-accent:disabled /template/ ContentPresenter">
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource Theme.AccentButtonDisabledForegroundBrush}" />
+  </Style>
+
+  <Style Selector="Button.theme-secondary">
+    <Setter Property="FontWeight" Value="Normal" />
+  </Style>
+</Styles>

@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Color x:Key="Color.Day.Neutral.000">#FFFFFFFF</Color>
+  <Color x:Key="Color.Day.Neutral.050">#FFF7F9FC</Color>
+  <Color x:Key="Color.Day.Neutral.100">#FFF1F4F8</Color>
+  <Color x:Key="Color.Day.Neutral.200">#FFE2E8F0</Color>
+  <Color x:Key="Color.Day.Neutral.300">#FFCBD5E1</Color>
+  <Color x:Key="Color.Day.Neutral.500">#FF64748B</Color>
+  <Color x:Key="Color.Day.Neutral.700">#FF334155</Color>
+  <Color x:Key="Color.Day.Neutral.900">#FF0F172A</Color>
+  <Color x:Key="Color.Day.Accent.Primary">#FF0F6CBD</Color>
+  <Color x:Key="Color.Day.Accent.PrimaryHover">#FF0B5EA9</Color>
+  <Color x:Key="Color.Day.Accent.PrimaryPressed">#FF094F8E</Color>
+  <Color x:Key="Color.Day.Accent.Subtle">#FFDCEBFA</Color>
+  <Color x:Key="Color.Day.Focus">#FF0F6CBD</Color>
+  <Color x:Key="Color.Day.Selection">#330F6CBD</Color>
+  <Color x:Key="Color.Day.Success">#FF107C10</Color>
+  <Color x:Key="Color.Day.Warning">#FF986F0B</Color>
+  <Color x:Key="Color.Day.Error">#FFD13438</Color>
+  <Color x:Key="Color.Day.Info">#FF0F6CBD</Color>
+</ResourceDictionary>

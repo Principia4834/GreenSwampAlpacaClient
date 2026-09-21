@@ -1,0 +1,52 @@
+<!-- SLIDERS -->
+<Styles xmlns="https://github.com/avaloniaui">
+
+  <!-- FLUENT SLIDER -->
+  <Style Selector="Slider.fluent">
+    <Setter Property="Foreground" Value="{StaticResource Fluent.AccentBrush}" />
+    <Setter Property="Template">
+      <ControlTemplate TargetType="Slider">
+        <Grid Margin="4">
+          <Rectangle Height="2" Fill="{StaticResource Fluent.BorderBrush}" VerticalAlignment="Center" />
+          <Thumb Width="12" Height="12"
+                 Background="{StaticResource Fluent.AccentBrush}"
+                 CornerRadius="6"
+                 HorizontalAlignment="Left" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- MATERIAL-MOBILE SLIDER -->
+  <Style Selector="Slider.material-mobile">
+    <Setter Property="Foreground" Value="{StaticResource Material.PrimaryBrush}" />
+    <Setter Property="Template">
+      <ControlTemplate TargetType="Slider">
+        <Grid Margin="8">
+          <Rectangle Height="4" Fill="#33000000" RadiusX="2" RadiusY="2" VerticalAlignment="Center" />
+          <Thumb Width="20" Height="20"
+                 Background="{StaticResource Material.PrimaryBrush}"
+                 CornerRadius="10"
+                 HorizontalAlignment="Left" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- NIGHT SLIDER -->
+  <Style Selector="Slider.night">
+    <Setter Property="Foreground" Value="#FFFF3B3B" />
+    <Setter Property="Template">
+      <ControlTemplate TargetType="Slider">
+        <Grid Margin="4">
+          <Rectangle Height="2" Fill="#FFFF3B3B" VerticalAlignment="Center" />
+          <Thumb Width="12" Height="12"
+                 Background="#FFFF3B3B"
+                 CornerRadius="6"
+                 HorizontalAlignment="Left" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+</Styles>

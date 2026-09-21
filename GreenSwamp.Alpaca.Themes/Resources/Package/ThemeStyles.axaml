@@ -1,0 +1,14 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <x:String x:Key="Theme.PackageStylesInfo">Merge this file into Application.Styles after FluentTheme to apply the GreenSwamp theme package.</x:String>
+  </Styles.Resources>
+
+  <StyleInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Styles/BaseControlStyles.axaml" />
+  <StyleInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Styles/SurfaceStyles.axaml" />
+  <StyleInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Styles/TypographyStyles.axaml" />
+  <StyleInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Styles/ButtonStyles.axaml" />
+  <StyleInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Styles/InputStyles.axaml" />
+  <StyleInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Styles/TabStyles.axaml" />
+  <StyleInclude Source="avares://GreenSwamp.Alpaca.Themes/Resources/Styles/SliderStyles.axaml" />
+</Styles>

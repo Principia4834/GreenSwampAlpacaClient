@@ -1,0 +1,127 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="YourApp.Controls.ControlGalleryPage"
+             Classes="{DynamicResource AppStyleClass}"
+             Padding="24">
+
+  <ScrollViewer>
+    <StackPanel Spacing="24">
+
+      <!-- ========================================================= -->
+      <!-- SECTION: BUTTONS                                          -->
+      <!-- ========================================================= -->
+      <TextBlock Text="Buttons" FontSize="20" FontWeight="Bold" />
+
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <Button Classes="fluent" Content="Fluent Button" Width="160" />
+        <Button Classes="material-mobile" Content="Material Button" Width="160" />
+        <Button Classes="night" Content="Night Button" Width="160" />
+      </StackPanel>
+
+
+      <!-- ========================================================= -->
+      <!-- SECTION: SLIDERS                                          -->
+      <!-- ========================================================= -->
+      <TextBlock Text="Sliders" FontSize="20" FontWeight="Bold" />
+
+      <StackPanel Spacing="16">
+        <StackPanel Orientation="Horizontal" Spacing="16">
+          <Slider Classes="fluent" Width="200" />
+          <TextBlock Text="Fluent Slider" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Spacing="16">
+          <Slider Classes="material-mobile" Width="200" />
+          <TextBlock Text="Material Slider" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Spacing="16">
+          <Slider Classes="night" Width="200" />
+          <TextBlock Text="Night Slider" VerticalAlignment="Center" />
+        </StackPanel>
+      </StackPanel>
+
+
+      <!-- ========================================================= -->
+      <!-- SECTION: CARDS                                            -->
+      <!-- ========================================================= -->
+      <TextBlock Text="Cards" FontSize="20" FontWeight="Bold" />
+
+      <StackPanel Orientation="Horizontal" Spacing="16">
+
+        <!-- Fluent Card -->
+        <Border Classes="fluent-card" Width="220">
+          <StackPanel Spacing="8">
+            <TextBlock Text="Fluent Card" FontWeight="SemiBold" />
+            <TextBlock Text="A clean, flat Fluent‑2 card." />
+            <Button Classes="fluent" Content="Action" Width="100" />
+          </StackPanel>
+        </Border>
+
+        <!-- Material Card -->
+        <Border Classes="material-card" Width="220">
+          <StackPanel Spacing="8">
+            <TextBlock Text="Material Card" FontWeight="SemiBold" />
+            <TextBlock Text="Rounded, elevated Material card." />
+            <Button Classes="material-mobile" Content="Action" Width="100" />
+          </StackPanel>
+        </Border>
+
+        <!-- Night Card -->
+        <Border Classes="night-card" Width="220">
+          <StackPanel Spacing="8">
+            <TextBlock Text="Night Card" FontWeight="SemiBold" />
+            <TextBlock Text="Red‑only astronomy card." />
+            <Button Classes="night" Content="Action" Width="100" />
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+
+
+      <!-- ========================================================= -->
+      <!-- SECTION: TABS                                             -->
+      <!-- ========================================================= -->
+      <TextBlock Text="Tabs" FontSize="20" FontWeight="Bold" />
+
+      <StackPanel Spacing="24">
+
+        <!-- Fluent Tabs -->
+        <TabControl Classes="fluent" Width="400">
+          <TabItem Header="General">
+            <TextBlock Text="Fluent Tab Content" Margin="12" />
+          </TabItem>
+          <TabItem Header="Advanced">
+            <TextBlock Text="More Fluent Content" Margin="12" />
+          </TabItem>
+        </TabControl>
+
+        <!-- Material Bottom Navigation -->
+        <TabControl Classes="material-bottom-nav" Width="400" Height="300">
+          <TabItem Header="Home">
+            <TextBlock Text="Material Home Content" Margin="12" />
+          </TabItem>
+          <TabItem Header="Settings">
+            <TextBlock Text="Material Settings Content" Margin="12" />
+          </TabItem>
+          <TabItem Header="Profile">
+            <TextBlock Text="Material Profile Content" Margin="12" />
+          </TabItem>
+        </TabControl>
+
+        <!-- Night Tabs -->
+        <TabControl Classes="night" Width="400">
+          <TabItem Header="Status">
+            <TextBlock Text="Night Mode Status" Margin="12" />
+          </TabItem>
+          <TabItem Header="Control">
+            <TextBlock Text="Night Mode Control" Margin="12" />
+          </TabItem>
+        </TabControl>
+
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

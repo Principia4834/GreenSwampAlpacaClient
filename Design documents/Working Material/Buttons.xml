@@ -1,0 +1,53 @@
+<!-- BUTTONS -->
+<Styles xmlns="https://github.com/avaloniaui">
+
+  <!-- FLUENT BUTTON -->
+  <Style Selector="Button.fluent">
+    <Setter Property="Background" Value="{StaticResource Fluent.PrimaryBrush}" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="BorderBrush" Value="{StaticResource Fluent.BorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{StaticResource Fluent.ButtonCornerRadius}" />
+    <Setter Property="Padding" Value="{StaticResource Fluent.ControlPadding}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+
+    <Style.Triggers>
+      <Setter Property="Background" Value="#FF0D5FA5" Selector="Button:pointerover.fluent" />
+      <Setter Property="Background" Value="#FF094777" Selector="Button:pressed.fluent" />
+      <Setter Property="Background" Value="#FFB3B3B3" Selector="Button:disabled.fluent" />
+      <Setter Property="Foreground" Value="#FF666666" Selector="Button:disabled.fluent" />
+    </Style.Triggers>
+  </Style>
+
+  <!-- MATERIAL-MOBILE BUTTON -->
+  <Style Selector="Button.material-mobile">
+    <Setter Property="Background" Value="{StaticResource Material.PrimaryBrush}" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{StaticResource Material.ButtonCornerRadius}" />
+    <Setter Property="Padding" Value="{StaticResource Material.ControlPadding}" />
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+
+    <Style.Triggers>
+      <Setter Property="Background" Value="#FF156FCC" Selector="Button:pointerover.material-mobile" />
+      <Setter Property="Background" Value="#FF0D5FA5" Selector="Button:pressed.material-mobile" />
+      <Setter Property="Background" Value="#61000000" Selector="Button:disabled.material-mobile" />
+      <Setter Property="Foreground" Value="#B3FFFFFF" Selector="Button:disabled.material-mobile" />
+    </Style.Triggers>
+  </Style>
+
+  <!-- NIGHT BUTTON -->
+  <Style Selector="Button.night">
+    <Setter Property="Background" Value="Black" />
+    <Setter Property="Foreground" Value="#FFFF3B3B" />
+    <Setter Property="BorderBrush" Value="#FFFF3B3B" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="8,4" />
+  </Style>
+
+</Styles>

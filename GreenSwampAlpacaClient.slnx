@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/Design Documents/">
+    <File Path="Design documents/greenswamp-telescopestate-signalr-spec.md" />
     <File Path="Design documents/telescope-architecture.md" />
+    <File Path="Design documents/telescope-implementation-design.md" />
     <File Path="Design documents/telescope-requirements.md" />
     <File Path="Design documents/telescope-test-strategy.md" />
   </Folder>

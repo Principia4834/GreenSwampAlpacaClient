@@ -1,5 +1,7 @@
 ﻿# Telescope Integration Requirements
 
+**Status:** Approved. A first implementation slice (Connect/FindHome/Park/Abort, Alpaca REST only) has been built and tested against a real GreenSwampAlpacaServer reference simulator — see `telescope-implementation-design.md` §10 for as-built status, confirmed deviations, and open items. Notably, **FR37/38/41 ("ongoing" position/state updates via internal polling) are not yet fully met** — the current implementation publishes state only at connect and after each command, with no continuous background poll loop yet (implementation design §10.2).
+
 ## 1. Purpose
 This document defines the requirements for adding telescope control support to the GreenSwamp Alpaca Client solution. The requirements cover a telescope control capability that can operate against any standard ASCOM Alpaca telescope, and that can additionally exploit a supplementary low-latency SignalR channel exposed by GreenSwamp-class telescope servers, while preserving a clean, instance-based MVVM architecture suitable for a future multi-telescope tabbed UI.
 

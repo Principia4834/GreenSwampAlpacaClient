@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>GreenSwamp.Alpaca.Client</RootNamespace>
     <OutputType>WinExe</OutputType>
@@ -20,9 +20,13 @@
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\GreenSwamp.Alpaca.Themes\GreenSwamp.Alpaca.Themes.csproj" />
+    <ProjectReference Include="..\GreenSwamp.Alpaca.Telescope.Abstractions\GreenSwamp.Alpaca.Telescope.Abstractions.csproj" />
+    <ProjectReference Include="..\GreenSwamp.Alpaca.Telescope.Model\GreenSwamp.Alpaca.Telescope.Model.csproj" />
+    <ProjectReference Include="..\GreenSwamp.Alpaca.Client.ViewModels\GreenSwamp.Alpaca.Client.ViewModels.csproj" />
   </ItemGroup>
 </Project>

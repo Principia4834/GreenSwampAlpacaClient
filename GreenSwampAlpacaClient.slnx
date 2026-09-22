@@ -8,4 +8,13 @@
   </Folder>
   <Project Path="GreenSwamp.Alpaca.Client\GreenSwamp.Alpaca.Client.csproj" />
   <Project Path="GreenSwamp.Alpaca.Themes\GreenSwamp.Alpaca.Themes.csproj" />
+  <Project Path="GreenSwamp.Alpaca.Telescope.Abstractions\GreenSwamp.Alpaca.Telescope.Abstractions.csproj" />
+  <Project Path="GreenSwamp.Alpaca.Telescope.Model\GreenSwamp.Alpaca.Telescope.Model.csproj" />
+  <Project Path="GreenSwamp.Alpaca.Client.ViewModels\GreenSwamp.Alpaca.Client.ViewModels.csproj" />
+  <Folder Name="/Tests/">
+    <Project Path="GreenSwamp.Alpaca.Telescope.Tests\GreenSwamp.Alpaca.Telescope.Tests.csproj" />
+    <Project Path="GreenSwamp.Alpaca.Client.Tests\GreenSwamp.Alpaca.Client.Tests.csproj" />
+    <Project Path="GreenSwamp.Alpaca.Telescope.IntegrationTests\GreenSwamp.Alpaca.Telescope.IntegrationTests.csproj" />
+    <Project Path="GreenSwamp.Alpaca.Telescope.TestHarness\GreenSwamp.Alpaca.Telescope.TestHarness.csproj" />
+  </Folder>
 </Solution>

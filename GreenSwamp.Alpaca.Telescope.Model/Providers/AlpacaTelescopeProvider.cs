@@ -11,12 +11,8 @@ namespace GreenSwamp.Alpaca.Telescope.Model.Providers;
 /// transport for a telescope session (architecture §6.3). Does not hand-roll HTTP/JSON; all wire
 /// protocol details are owned by ASCOM.Alpaca.Components.
 ///
-/// Known GreenSwamp-class detection mechanism for this slice (see implementation design/architecture
-/// §6.8, exact mechanism confirmed TBD-then-resolved for this pass): recognizes the per-device
-/// Description/DriverInfo strings reported by the connected device itself, avoiding an extra
-/// server-level management-API round-trip. A future revision may add the server-level
-/// management/v1/description check as a stronger/earlier signal (e.g. for discovery, §6.10) - not
-/// required for this slice since Connect already retrieves Description for free.
+/// GreenSwamp-class detection (SignalR-transport-implementation-plan-final.md §2): recognizes the
+/// connected device's DriverInfo string alone (name+version check) - see GreenSwampClassDetector.
 /// </summary>
 internal sealed class AlpacaTelescopeProvider : IAsyncDisposable
 {
@@ -84,7 +80,7 @@ internal sealed class AlpacaTelescopeProvider : IAsyncDisposable
             CanSlewAltAzAsync = _client.CanSlewAltAzAsync,
             CanSync = _client.CanSync,
             CanSyncAltAz = _client.CanSyncAltAz,
-            IsGreenSwampClass = GreenSwampClassDetector.IsGreenSwampClass(_client.Description, _client.DriverInfo)
+            IsGreenSwampClass = GreenSwampClassDetector.IsGreenSwampClass(_client.DriverInfo)
         };
     }
 

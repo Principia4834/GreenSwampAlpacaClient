@@ -106,3 +106,28 @@ public enum GreenSwampMountType
     Simulator,
     SkyWatcher
 }
+
+/// <summary>
+/// Neutral mirror of ASCOM.Common.DeviceInterfaces.AlignmentMode (spec §11.4.1). Direct 1:1
+/// mirror of member names/values - no value remapping occurs. GreenSwamp-prefixed to avoid any
+/// future name clash with a plain AlignmentMode type elsewhere in the client codebase.
+/// </summary>
+public enum GreenSwampAlignmentMode
+{
+    AltAz = 0,
+    Polar = 1,
+    GermanPolar = 2
+}
+
+/// <summary>
+/// Neutral mirror of ASCOM.Common.DeviceInterfaces.DriveRate (spec §11.4.1). Direct 1:1 mirror of
+/// member names/values - no value remapping occurs. GreenSwamp-prefixed to avoid any future name
+/// clash with a plain DriveRate type elsewhere in the client codebase.
+/// </summary>
+public enum GreenSwampDriveRate
+{
+    Sidereal = 0,
+    Lunar = 1,
+    Solar = 2,
+    King = 3
+}

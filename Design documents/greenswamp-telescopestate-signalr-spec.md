@@ -153,12 +153,12 @@ This table is the authoritative field-by-field mapping. It must be updated whene
 | `HasEverBeenConnected` | `bool` | `GreenSwampTelescopeState.HasEverBeenConnected` | Mirrored |
 | `ParkSelectedName` | `string?` | `GreenSwampTelescopeState.ParkSelectedName` | Mirrored |
 | `ParkPositionNames` | `List<string>` | `GreenSwampTelescopeState.ParkPositionNames` | Mirrored |
-| `TargetRightAscension` | `double` | `GreenSwampTelescopeState.TargetRightAscension` (new) | **Confirmed for addition** |
-| `TargetDeclination` | `double` | `GreenSwampTelescopeState.TargetDeclination` (new) | **Confirmed for addition** |
+| `TargetRightAscension` | `double` | `TelescopeState.TargetRightAscension` (new) | **Confirmed for addition** — client mirror corrected to neutral `TelescopeState` (Decision B, RESOLVED); see §11.5 |
+| `TargetDeclination` | `double` | `TelescopeState.TargetDeclination` (new) | **Confirmed for addition** — client mirror corrected to neutral `TelescopeState` (Decision B, RESOLVED); see §11.5 |
 | `ActualAxisX` / `ActualAxisY` | `double` | `GreenSwampTelescopeState.ActualAxisX/Y` | Mirrored |
 | `AppAxisX` / `AppAxisY` | `double` | `GreenSwampTelescopeState.AppAxisX/Y` | Mirrored |
 | `AxisSteps` | `double[2]` | `GreenSwampTelescopeState.AxisSteps` (`IReadOnlyList<double>`) | Mirrored |
-| `TrackingRate` | `ASCOM.Common.DeviceInterfaces.DriveRate` | `GreenSwampTelescopeState.TrackingRate` (`GreenSwampDriveRate`, new — see §11.4.1) | **Confirmed for addition** (string-enum mapping) |
+| `TrackingRate` | `ASCOM.Common.DeviceInterfaces.DriveRate` | `TelescopeState.TrackingRate` (`GreenSwampDriveRate`, new — see §11.4.1) | **Confirmed for addition** (string-enum mapping) — client mirror resolved to neutral `TelescopeState`, joining the 30s site/alignment cadence bucket (see §11.5); **requires a server-side fix** — `TelescopeStateService.BuildSnapshot` currently hardcodes `TrackingRate = DriveRate.Sidereal` instead of reading the mount's live value (see §11.7 item 11) |
 | `IsPulseGuidingRa` / `IsPulseGuidingDec` | `bool` | `GreenSwampTelescopeState.IsPulseGuidingRa/Dec` | Mirrored |
 | `SlewState` | `GreenSwamp.Alpaca.MountControl.SlewType` | `GreenSwampTelescopeState.SlewState` (`GreenSwampSlewType`) | Mirrored (string-enum mapping) |
 | `LoopCounter` | `ulong` | `GreenSwampTelescopeState.LoopCounter` | Mirrored |
@@ -185,9 +185,11 @@ This table is the authoritative field-by-field mapping. It must be updated whene
 | `MountName` | `string` | `GreenSwampTelescopeState.MountName` | Mirrored |
 | `MountVersion` | `string[2]` | `GreenSwampTelescopeState.MountVersion` (`IReadOnlyList<string>`) | Mirrored |
 | `Capabilities` | `string` | `GreenSwampTelescopeState.Capabilities` | Mirrored |
-| `SiteLatitude` | `double` | `GreenSwampTelescopeState.SiteLatitude` (new) | **Confirmed for addition** |
-| `AlignmentMode` | `ASCOM.Common.DeviceInterfaces.AlignmentMode` | `GreenSwampTelescopeState.AlignmentMode` (`GreenSwampAlignmentMode`, new — see §11.4.1) | **Confirmed for addition** (string-enum mapping) |
+| `SiteLatitude` | `double` | `TelescopeState.SiteLatitude` (new) | **Confirmed for addition** — client mirror corrected to neutral `TelescopeState` (Decision B, RESOLVED); see §11.5 |
+| `AlignmentMode` | `ASCOM.Common.DeviceInterfaces.AlignmentMode` | `TelescopeState.AlignmentMode` (`GreenSwampAlignmentMode`, new — see §11.4.1) | **Confirmed for addition** (string-enum mapping) — client mirror corrected to neutral `TelescopeState` (Decision B, RESOLVED); see §11.5 |
 | `MountType` | `GreenSwamp.Alpaca.MountControl.MountType` (namespace confirmed — see §11.7) | `GreenSwampTelescopeState.MountType` (`GreenSwampMountType`) | Mirrored (string-enum mapping) |
+| `SiteLongitude` (new — server field, currently absent from `TelescopeStateModel`) | `double` | `TelescopeState.SiteLongitude` (new) | **Confirmed for addition** — requires a server-side field addition (`TelescopeStateModel`/`TelescopeStateService.BuildSnapshot`, following the exact pattern of `SiteLatitude`, reading `mount.Settings.Longitude`) before this row is mirrored end-to-end; see §11.7 item 10 |
+| `SiteElevation` (new — server field, currently absent from `TelescopeStateModel`) | `double` | `TelescopeState.SiteElevation` (new) | **Confirmed for addition** — requires a server-side field addition (`TelescopeStateModel`/`TelescopeStateService.BuildSnapshot`, following the exact pattern of `SiteLatitude`, reading `mount.Settings.Elevation`) before this row is mirrored end-to-end; see §11.7 item 10 |
 
 ### 11.4.1 New Client-Side Neutral Enums (required for `TrackingRate` and `AlignmentMode`)
 
@@ -216,15 +218,24 @@ Both are 1:1 mirrors — no value remapping, consistent with the `TelescopePierS
 
 ### 11.5 Fields Confirmed for Addition (formerly "Gaps Identified by This Table")
 
-Five `TelescopeStateModel` fields had no client-side mirror when this table was first drafted. All five are now **confirmed for addition** to `GreenSwampTelescopeState` (server-side, `TelescopeStateService.BuildSnapshot` already populates all five today — confirmed by inspection, so there is no server-side data gap, only a client-side mirror gap):
+Seven `TelescopeStateModel` fields have no client-side mirror as of this table (the five identified originally, plus `SiteLongitude`/`SiteElevation`, added by this revision — see Finding A11/§11.7 item 10). All seven are now **confirmed for addition** on the client side:
 
 - `TargetRightAscension` (`double`)
 - `TargetDeclination` (`double`)
 - `TrackingRate` (`ASCOM.Common.DeviceInterfaces.DriveRate` → client `GreenSwampDriveRate`, §11.4.1)
 - `SiteLatitude` (`double`)
 - `AlignmentMode` (`ASCOM.Common.DeviceInterfaces.AlignmentMode` → client `GreenSwampAlignmentMode`, §11.4.1)
+- `SiteLongitude` (`double`) — **not yet present in `TelescopeStateModel`**, requires a server-side field addition first (see below and §11.7 item 10)
+- `SiteElevation` (`double`) — **not yet present in `TelescopeStateModel`**, requires a server-side field addition first (see below and §11.7 item 10)
 
-The §11.4 table is the authoritative source for these five rows; this subsection is a summary record, not an additional task list.
+Server-side data-source status, corrected by this revision:
+- `TargetRightAscension`, `TargetDeclination`, `SiteLatitude`, `AlignmentMode`: `TelescopeStateService.BuildSnapshot` already populates all four with live mount values today (e.g. `mount.Settings.Latitude`, `mount.Settings.AlignmentMode`) — confirmed by inspection, no server-side data gap, only a client-side mirror gap.
+- `TrackingRate`: **not** already correctly populated — `TelescopeStateService.BuildSnapshot` currently hardcodes `TrackingRate = DriveRate.Sidereal` rather than reading the mount's live tracking rate (available via the same pattern as `SiteLatitude`, e.g. `mount.Settings.TrackingRate`). This is a required server-side fix, not merely a client-side mirror gap. See §11.7 item 11.
+- `SiteLongitude`, `SiteElevation`: absent from `TelescopeStateModel`/`BuildSnapshot` entirely. Closing this requires a server-side change adding both fields to `TelescopeStateModel` and populating them in `BuildSnapshot` from `mount.Settings.Longitude`/`mount.Settings.Elevation`, following the exact pattern already used for `SiteLatitude`. See §11.7 item 10.
+
+The §11.4 table is the authoritative source for these seven rows; this subsection is a summary record, not an additional task list.
+
+**Get Well Guidance.md Stage 2 note (client-side placement, RESOLVED):** the client's own `SignalR-transport-implementation-plan.md` (Decision B, RESOLVED) places `TargetRightAscension`, `TargetDeclination`, `SiteLatitude`, `SiteLongitude`, `SiteElevation`, and `AlignmentMode` on the client's neutral `TelescopeState` type instead of `GreenSwampTelescopeState`, so that standard Alpaca-class telescopes — which source the same fields via individual Alpaca property requests rather than this hub — expose them through the same client-side property surface. `TrackingRate`'s client-side placement, previously left open pending the end-of-stages clean-up review, is now resolved the same way: it also mirrors onto the neutral `TelescopeState` type, and — for the AlpacaClass AP-fallback path — joins the same 30-second site/alignment polling cadence as `AlignmentMode`/`SiteLatitude`/`SiteLongitude`/`SiteElevation` (not the 1-second target-coordinate cadence). This is a client-side (`GreenSwampAlpacaClient`) design decision only; it does not change this table's server-side wire contract (field names/types/JSON shape on this hub are unaffected) — only which client-side class receives the deserialized value.
 
 ### 11.6 Change-Control Process
 
@@ -236,9 +247,11 @@ To keep the two independently-versioned repositories from drifting silently:
 
 ### 11.7 Resolution Log (formerly "Open Items Introduced by This Section")
 
-7. **`MountType` source namespace — RESOLVED.** `TelescopeStateModel.MountType` (and the value it is assigned from, `mount.Settings.Mount` in `TelescopeStateService.BuildSnapshot`) binds to `GreenSwamp.Alpaca.MountControl.MountType` (`Enums.cs`: `Simulator`, `SkyWatcher`) — **not** `GreenSwamp.Alpaca.Settings.Models.MountType` (`AlignmentMode.cs`). The two duplicate enum definitions remain in the server codebase; consolidating them is a separate, pre-existing concern outside this specification's scope, noted here only because §11.4's table needed to cite the correct one.
+7. **`MountType` source namespace — RESOLVED.** `TelescopeStateModel.MountType` (and the value it is assigned from, `mount.Settings.Mount` in `TelescopeStateService.BuildSnapshot`) binds to   `GreenSwamp.Alpaca.Settings.Models.MountType` (`AlignmentMode.cs`).
 8. **Enum wire format — RESOLVED.** `JsonStringEnumConverter` is confirmed for the server's SignalR JSON protocol (§11.3); the client registers the inverse converter.
 9. **Five-field client-side gap — RESOLVED.** All five fields are confirmed for addition to `GreenSwampTelescopeState` (§11.5), including two new neutral enums, `GreenSwampAlignmentMode` and `GreenSwampDriveRate` (§11.4.1).
+10. **New gap identified by `Get Well Guidance.md` Stage 2 ("Telescope state for GreenSwampClass and AlpacaClass telescopes") — RESOLVED (end-of-stages clean-up).** That stage's guidance requires GreenSwamp-class telescopes to treat this hub's broadcast state as the single source of truth for **all** information fields, explicitly including site longitude and site elevation alongside site latitude. `SiteLongitude`/`SiteElevation` are now confirmed for addition (§11.4/§11.5), on the same basis as the other five originally-identified fields. Closing this gap in full still requires a server-side (`GreenSwampAlpacaServer`) change to add `SiteLongitude`/`SiteElevation` to `TelescopeStateModel`/`TelescopeStateService.BuildSnapshot`, following the same pattern already used for `SiteLatitude` — this table now specifies that change precisely (§11.4 rows, §11.5), but the change itself has not yet been implemented. Tracked in the client-side `SignalR-transport-implementation-plan.md` as Finding A11 (RESOLVED at the specification level).
+11. **`TrackingRate` placement and server-side data-fidelity gap — RESOLVED (end-of-stages clean-up).** Two issues are closed by this revision: (a) client-side placement — `TrackingRate` mirrors onto the neutral `TelescopeState` type (not `GreenSwampTelescopeState`), joining the same 30-second AP-fallback cadence as `AlignmentMode`/`SiteLatitude`/`SiteLongitude`/`SiteElevation`, resolving the ambiguity left open by Stage 2 (§11.5, Decision B); (b) server-side data fidelity — `TelescopeStateService.BuildSnapshot` currently assigns `TrackingRate = DriveRate.Sidereal` unconditionally rather than reading the mount's live tracking rate, so this table's field contract for `TrackingRate` is only accurate once the server is changed to read the live value (see §11.4/§11.5). This table now specifies both required changes precisely, but neither has yet been implemented. Tracked in the client-side `SignalR-transport-implementation-plan.md` as Finding A2 (RESOLVED at the specification level).
 
 With §9 and all items in this section resolved, this specification is ready to drive parallel client-side (`GreenSwampAlpacaClient`) and server-side (`GreenSwampAlpacaServer`) implementation.
 

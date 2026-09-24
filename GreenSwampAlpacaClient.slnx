@@ -2,6 +2,7 @@
   <Folder Name="/Design Documents/">
     <File Path="Design documents/Get Well Guidance.md" />
     <File Path="Design documents/greenswamp-telescopestate-signalr-spec.md" />
+    <File Path="Design documents/SignalR-transport-implementation-plan-final.md" />
     <File Path="Design documents/SignalR-transport-implementation-plan.md" />
     <File Path="Design documents/telescope-architecture.md" />
     <File Path="Design documents/telescope-implementation-design.md" />

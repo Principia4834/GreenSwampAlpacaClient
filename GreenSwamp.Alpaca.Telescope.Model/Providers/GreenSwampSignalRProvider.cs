@@ -1,5 +1,7 @@
-﻿﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Text.Json.Serialization;
 using GreenSwamp.Alpaca.Telescope.Abstractions;
 using AppTelescopeState = GreenSwamp.Alpaca.Telescope.Abstractions.TelescopeState;
@@ -16,7 +18,17 @@ namespace GreenSwamp.Alpaca.Telescope.Model.Providers;
 /// received snapshot to TelescopeSession via <see cref="StateReceived"/> - this provider does not
 /// decide REST/SignalR precedence itself; that is TelescopeSession's job (§5).
 /// </summary>
-internal sealed class GreenSwampSignalRProvider : IAsyncDisposable
+internal interface IGreenSwampSignalRProvider : IAsyncDisposable
+{
+    event EventHandler<GreenSwampStateReceivedEventArgs>? StateReceived;
+    event EventHandler? Reconnecting;
+    event EventHandler? ConnectionLost;
+
+    Task ConnectAsync(CancellationToken ct);
+    Task DisconnectAsync(CancellationToken ct);
+}
+
+internal sealed class GreenSwampSignalRProvider : IGreenSwampSignalRProvider
 {
     /// <summary>WithAutomaticReconnect's built-in schedule (§5/§7 Phase 1): 2, 5, 10, 10, 10 seconds - 5 retries total.</summary>
     private static readonly TimeSpan[] ReconnectDelays =
@@ -30,18 +42,32 @@ internal sealed class GreenSwampSignalRProvider : IAsyncDisposable
 
     private readonly HubConnection _connection;
     private readonly int _deviceNumber;
+    private readonly ILogger<GreenSwampSignalRProvider> _logger;
     private bool _disposed;
+    private bool _fallbackEngaged;
 
     public GreenSwampSignalRProvider(TelescopeConnectionDescriptor descriptor)
+        : this(descriptor, NullLogger<GreenSwampSignalRProvider>.Instance)
+    {
+    }
+
+    internal GreenSwampSignalRProvider(TelescopeConnectionDescriptor descriptor, ILogger<GreenSwampSignalRProvider> logger)
     {
         _deviceNumber = descriptor.AlpacaDeviceNumber;
+        _logger = logger;
+
+        _logger.LogTrace("SignalR device number set to {DeviceNumber}", _deviceNumber);
 
         var hubUrl = $"http://{descriptor.HostName}:{descriptor.Port}/telescopestatehub";
 
         _connection = new HubConnectionBuilder()
             .WithUrl(hubUrl)
             .WithAutomaticReconnect(ReconnectDelays)
-            .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
+            .AddJsonProtocol(o =>
+            {
+                o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                o.PayloadSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
+            })
             .Build();
 
         _connection.On<GreenSwampTelescopeStatePayload>("ReceiveTelescopeState", OnReceiveTelescopeState);
@@ -50,18 +76,22 @@ internal sealed class GreenSwampSignalRProvider : IAsyncDisposable
         // re-issued every time the connection transitions back to Connected.
         _connection.Reconnected += _ => JoinGroupAsync(CancellationToken.None);
 
-        _connection.Reconnecting += error =>
+        _connection.Reconnecting += _ =>
         {
             Reconnecting?.Invoke(this, EventArgs.Empty);
             return Task.CompletedTask;
         };
 
-        _connection.Closed += error =>
+        _connection.Closed += _ =>
         {
+            if (_fallbackEngaged)
+            {
+                return Task.CompletedTask;
+            }
+
             // WithAutomaticReconnect only fires Closed once its own retry schedule is exhausted
-            // (irrecoverable loss, §5) - a deliberate StopAsync()/DisposeAsync() also raises this
-            // event, which TelescopeSession must be able to tell apart from a real fault via its
-            // own disposal-ordering, since HubConnection itself does not distinguish the two.
+            // (irrecoverable loss, §5) - signal the session to hand control to REST.
+            _fallbackEngaged = true;
             ConnectionLost?.Invoke(this, EventArgs.Empty);
             return Task.CompletedTask;
         };
@@ -83,8 +113,11 @@ internal sealed class GreenSwampSignalRProvider : IAsyncDisposable
     /// </summary>
     public async Task ConnectAsync(CancellationToken ct)
     {
+        _logger.LogTrace("Starting SignalR connection for device {DeviceNumber}", _deviceNumber);
         await _connection.StartAsync(ct).ConfigureAwait(false);
+        _logger.LogTrace("SignalR connection started for device {DeviceNumber}", _deviceNumber);
         await JoinGroupAsync(ct).ConfigureAwait(false);
+        _logger.LogTrace("Join ack received for device {DeviceNumber}", _deviceNumber);
     }
 
     public async Task DisconnectAsync(CancellationToken ct)
@@ -94,17 +127,25 @@ internal sealed class GreenSwampSignalRProvider : IAsyncDisposable
             await LeaveGroupAsync(ct).ConfigureAwait(false);
         }
 
+        _fallbackEngaged = true;
         await _connection.StopAsync(ct).ConfigureAwait(false);
     }
 
-    private Task JoinGroupAsync(CancellationToken ct) =>
-        _connection.InvokeAsync("JoinTelescopeStateGroupAsync", _deviceNumber, ct);
+    private Task JoinGroupAsync(CancellationToken ct)
+    {
+        _logger.LogTrace("Sending join request for device {DeviceNumber}", _deviceNumber);
+        return _connection.InvokeAsync("JoinTelescopeStateGroupAsync", _deviceNumber, ct);
+    }
 
-    private Task LeaveGroupAsync(CancellationToken ct) =>
-        _connection.InvokeAsync("LeaveTelescopeStateGroupAsync", _deviceNumber, ct);
+    private Task LeaveGroupAsync(CancellationToken ct)
+    {
+        _logger.LogTrace("Sending leave request for device {DeviceNumber}", _deviceNumber);
+        return _connection.InvokeAsync("LeaveTelescopeStateGroupAsync", _deviceNumber, ct);
+    }
 
     private void OnReceiveTelescopeState(GreenSwampTelescopeStatePayload payload)
     {
+        _logger.LogTrace("Received ReceiveTelescopeState payload for device {DeviceNumber}", _deviceNumber);
         AppTelescopeState state = GreenSwampTelescopeStatePayloadMapper.ToTelescopeState(payload, DateTimeOffset.UtcNow);
         StateReceived?.Invoke(this, new GreenSwampStateReceivedEventArgs(state));
     }

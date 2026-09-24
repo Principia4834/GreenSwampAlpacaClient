@@ -18,6 +18,14 @@ internal static class TelescopeStateMapper
     /// </summary>
     public static AppTelescopeState ToTelescopeState(AscomTelescopeState deviceState, DateTimeOffset timeStamp)
     {
+        return ToTelescopeState(deviceState, timeStamp, AlpacaSupplementalState.Empty);
+    }
+
+    public static AppTelescopeState ToTelescopeState(
+        AscomTelescopeState deviceState,
+        DateTimeOffset timeStamp,
+        AlpacaSupplementalState supplementalState)
+    {
         return new AppTelescopeState
         {
             Altitude = deviceState.Altitude ?? 0,
@@ -31,6 +39,13 @@ internal static class TelescopeStateMapper
             AtPark = deviceState.AtPark ?? false,
             IsPulseGuiding = deviceState.IsPulseGuiding ?? false,
             UtcDate = deviceState.UTCDate ?? default,
+            SiteLatitude = supplementalState.SiteLatitude,
+            SiteLongitude = supplementalState.SiteLongitude,
+            SiteElevation = supplementalState.SiteElevation,
+            AlignmentMode = supplementalState.AlignmentMode,
+            TrackingRate = supplementalState.TrackingRate,
+            TargetRightAscension = supplementalState.TargetRightAscension,
+            TargetDeclination = supplementalState.TargetDeclination,
             TimeStamp = timeStamp,
             GreenSwamp = null
         };
@@ -47,4 +62,16 @@ internal static class TelescopeStateMapper
         PointingState.ThroughThePole => TelescopePierSide.ThroughThePole,
         _ => TelescopePierSide.Unknown
     };
+}
+
+internal readonly record struct AlpacaSupplementalState(
+    double SiteLatitude,
+    double SiteLongitude,
+    double SiteElevation,
+    GreenSwampAlignmentMode AlignmentMode,
+    GreenSwampDriveRate TrackingRate,
+    double TargetRightAscension,
+    double TargetDeclination)
+{
+    public static AlpacaSupplementalState Empty { get; } = new();
 }

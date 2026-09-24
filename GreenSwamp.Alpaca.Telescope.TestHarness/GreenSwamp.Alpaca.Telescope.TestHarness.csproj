@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GreenSwamp.Alpaca.Telescope.Abstractions\GreenSwamp.Alpaca.Telescope.Abstractions.csproj" />
     <ProjectReference Include="..\GreenSwamp.Alpaca.Client.ViewModels\GreenSwamp.Alpaca.Client.ViewModels.csproj" />
+    <ProjectReference Include="..\GreenSwamp.Alpaca.Telescope.Model\GreenSwamp.Alpaca.Telescope.Model.csproj" />
   </ItemGroup>
 
 </Project>

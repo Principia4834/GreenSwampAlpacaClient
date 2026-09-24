@@ -86,4 +86,71 @@ public class TelescopeSessionIntegrationTests : IAsyncLifetime
         await _session.DisconnectAsync();
         _session.Status.State.Should().Be(TelescopeConnectionState.Disconnected);
     }
+
+    [Fact]
+    public async Task GreenSwampSignalR_ConnectsAndRaisesSignalRActive_Status()
+    {
+        var connectedTcs = new TaskCompletionSource<TelescopeConnectionStatus>(TaskCreationOptions.RunContinuationsAsynchronously);
+        EventHandler<TelescopeConnectionStatusChangedEventArgs> handler = (_, e) =>
+        {
+            if (e.Status.State == TelescopeConnectionState.Connected && e.Status.IsSignalRActive)
+            {
+                connectedTcs.TrySetResult(e.Status);
+            }
+        };
+
+        _session.ConnectionStatusChanged += handler;
+        await _session.ConnectAsync();
+
+        var connectedStatus = await connectedTcs.Task.WaitAsync(TimeSpan.FromSeconds(30));
+        _session.ConnectionStatusChanged -= handler;
+
+        connectedStatus.IsAlpacaRestActive.Should().BeTrue();
+        connectedStatus.IsSignalRActive.Should().BeTrue();
+        connectedStatus.IsSignalRDegraded.Should().BeFalse();
+        _session.Status.Should().Be(connectedStatus);
+    }
+
+    [Fact]
+    public async Task GreenSwampSignalR_FullyPopulatesSnapshotFields_FromLiveServer()
+    {
+        await _session.ConnectAsync();
+
+        _session.Status.IsAlpacaRestActive.Should().BeTrue();
+        _session.Status.IsSignalRActive.Should().BeTrue();
+        _session.Status.IsSignalRDegraded.Should().BeFalse();
+
+        var snapshotTcs = new TaskCompletionSource<TelescopeState>(TaskCreationOptions.RunContinuationsAsynchronously);
+        EventHandler<TelescopeStateUpdatedEventArgs> handler = (_, e) =>
+        {
+            if (e.State.GreenSwamp is not null)
+            {
+                snapshotTcs.TrySetResult(e.State);
+            }
+        };
+
+        _session.StateUpdated += handler;
+
+        var snapshot = await snapshotTcs.Task.WaitAsync(TimeSpan.FromSeconds(30));
+
+        _session.StateUpdated -= handler;
+
+        snapshot.GreenSwamp.Should().NotBeNull("GreenSwamp-class devices should populate the GreenSwamp extension snapshot via SignalR");
+        snapshot.SiteLatitude.Should().NotBe(0);
+        snapshot.AlignmentMode.Should().NotBe(default);
+        // TrackingRate is not asserted against "not default" - GreenSwampDriveRate.Sidereal (0) is
+        // both the enum's default value and a legitimate real-world tracking rate, so that
+        // assertion can never hold for a truthful payload while the mount tracks sidereally.
+        // Assert only that the field deserialized to a defined enum member.
+        Enum.IsDefined(snapshot.TrackingRate).Should().BeTrue();
+        snapshot.TargetRightAscension.Should().NotBe(0);
+        snapshot.TargetDeclination.Should().NotBe(0);
+        snapshot.TimeStamp.Should().NotBe(default);
+        snapshot.GreenSwamp!.MountName.Should().NotBeNullOrWhiteSpace();
+        // MountType is not asserted against "not default" - GreenSwampMountType.Simulator (0) is
+        // both the enum's default value and this test's real device (device 0 is documented as a
+        // GEM simulator, see class remarks), so that assertion can never hold truthfully here.
+        // Assert only that the field deserialized to a defined enum member.
+        Enum.IsDefined(snapshot.GreenSwamp.MountType).Should().BeTrue();
+    }
 }

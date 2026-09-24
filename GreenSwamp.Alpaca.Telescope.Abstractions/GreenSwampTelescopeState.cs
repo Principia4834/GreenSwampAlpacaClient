@@ -86,18 +86,24 @@ public sealed class GreenSwampTelescopeState
     public GreenSwampMountType MountType { get; init; }
 }
 
-/// <summary>Neutral mirror of GreenSwamp.Alpaca.MountControl.SlewType (protocol insulation, same rationale as TelescopeAxis/TelescopePierSide).</summary>
+/// <summary>
+/// Neutral mirror of GreenSwamp.Alpaca.MountControl.SlewType (protocol insulation, same rationale
+/// as TelescopeAxis/TelescopePierSide). Member names carry the server's exact "Slew"-prefixed wire
+/// values (e.g. "SlewNone", confirmed against the live server - the original un-prefixed names
+/// caused every SignalR snapshot to fail JSON deserialization silently) - matching is by member
+/// name (spec §11.3), so these must stay byte-for-byte identical to the server enum.
+/// </summary>
 public enum GreenSwampSlewType
 {
-    None,
-    Settle,
-    MoveAxis,
-    RaDec,
-    AltAz,
-    Park,
-    Home,
-    Handpad,
-    Complete
+    SlewNone,
+    SlewSettle,
+    SlewMoveAxis,
+    SlewRaDec,
+    SlewAltAz,
+    SlewPark,
+    SlewHome,
+    SlewHandpad,
+    SlewComplete
 }
 
 /// <summary>Neutral mirror of GreenSwamp.Alpaca.MountControl.MountType.</summary>

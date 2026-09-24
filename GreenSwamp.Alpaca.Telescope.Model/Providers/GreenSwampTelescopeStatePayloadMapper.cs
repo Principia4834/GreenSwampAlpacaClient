@@ -1,4 +1,4 @@
-﻿﻿using GreenSwamp.Alpaca.Telescope.Abstractions;
+﻿using GreenSwamp.Alpaca.Telescope.Abstractions;
 using AppTelescopeState = GreenSwamp.Alpaca.Telescope.Abstractions.TelescopeState;
 
 namespace GreenSwamp.Alpaca.Telescope.Model.Providers;

@@ -106,6 +106,35 @@ public sealed class AlpacaTelescopeProviderPollingTests
         third.SiteLatitude.Should().Be(40.1);
     }
 
+    [Fact]
+    public void GetState_WhenSupplementalPropertiesNotImplemented_StillReturnsDeviceStateSnapshot()
+    {
+        var fakeClient = new FakeAlpacaTelescopeClient
+        {
+            CurrentState = new AscomTelescopeState
+            {
+                Altitude = 10.5,
+                Azimuth = 200.2,
+                Declination = -33.1,
+                RightAscension = 4.25,
+                Slewing = true
+            },
+            ThrowOnSlowSupplementalRead = true,
+            ThrowOnTargetSupplementalRead = true
+        };
+
+        var provider = new AlpacaTelescopeProvider(fakeClient);
+        var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
+
+        var state = provider.GetState(timeProvider);
+
+        state.Altitude.Should().Be(10.5);
+        state.Azimuth.Should().Be(200.2);
+        state.Declination.Should().Be(-33.1);
+        state.RightAscension.Should().Be(4.25);
+        state.Slewing.Should().BeTrue();
+    }
+
     private sealed class FakeAlpacaTelescopeClient : IAlpacaTelescopeClient
     {
         public AscomTelescopeState CurrentState { get; set; } = new() { Slewing = false };
@@ -120,6 +149,8 @@ public sealed class AlpacaTelescopeProviderPollingTests
         public int TrackingRateValueRaw { get; set; } = 2;
         public double TargetRightAscensionValue { get; set; } = 5.5;
         public double TargetDeclinationValue { get; set; } = -22.5;
+        public bool ThrowOnSlowSupplementalRead { get; set; }
+        public bool ThrowOnTargetSupplementalRead { get; set; }
 
         public Task ConnectAsync(CancellationToken ct) => Task.CompletedTask;
         public Task DisconnectAsync(CancellationToken ct) => Task.CompletedTask;
@@ -151,6 +182,10 @@ public sealed class AlpacaTelescopeProviderPollingTests
             {
                 SlowPollReadCount++;
                 ReadSequence.Add(nameof(SiteLatitude));
+                if (ThrowOnSlowSupplementalRead)
+                {
+                    throw new ASCOM.PropertyNotImplementedException();
+                }
                 return SiteLatitudeValue;
             }
         }
@@ -161,6 +196,10 @@ public sealed class AlpacaTelescopeProviderPollingTests
             {
                 SlowPollReadCount++;
                 ReadSequence.Add(nameof(SiteLongitude));
+                if (ThrowOnSlowSupplementalRead)
+                {
+                    throw new ASCOM.PropertyNotImplementedException();
+                }
                 return SiteLongitudeValue;
             }
         }
@@ -171,6 +210,10 @@ public sealed class AlpacaTelescopeProviderPollingTests
             {
                 SlowPollReadCount++;
                 ReadSequence.Add(nameof(SiteElevation));
+                if (ThrowOnSlowSupplementalRead)
+                {
+                    throw new ASCOM.PropertyNotImplementedException();
+                }
                 return SiteElevationValue;
             }
         }
@@ -181,6 +224,10 @@ public sealed class AlpacaTelescopeProviderPollingTests
             {
                 SlowPollReadCount++;
                 ReadSequence.Add("AlignmentMode");
+                if (ThrowOnSlowSupplementalRead)
+                {
+                    throw new ASCOM.PropertyNotImplementedException();
+                }
                 return AlignmentModeValueRaw;
             }
         }
@@ -191,6 +238,10 @@ public sealed class AlpacaTelescopeProviderPollingTests
             {
                 SlowPollReadCount++;
                 ReadSequence.Add("TrackingRate");
+                if (ThrowOnSlowSupplementalRead)
+                {
+                    throw new ASCOM.PropertyNotImplementedException();
+                }
                 return TrackingRateValueRaw;
             }
         }
@@ -201,6 +252,10 @@ public sealed class AlpacaTelescopeProviderPollingTests
             {
                 TargetPollReadCount++;
                 ReadSequence.Add(nameof(TargetRightAscension));
+                if (ThrowOnTargetSupplementalRead)
+                {
+                    throw new ASCOM.PropertyNotImplementedException();
+                }
                 return TargetRightAscensionValue;
             }
         }
@@ -211,6 +266,10 @@ public sealed class AlpacaTelescopeProviderPollingTests
             {
                 TargetPollReadCount++;
                 ReadSequence.Add(nameof(TargetDeclination));
+                if (ThrowOnTargetSupplementalRead)
+                {
+                    throw new ASCOM.PropertyNotImplementedException();
+                }
                 return TargetDeclinationValue;
             }
         }

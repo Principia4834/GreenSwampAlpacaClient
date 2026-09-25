@@ -2,8 +2,179 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:vm="using:GreenSwamp.Alpaca.Client.ViewModels"
+        mc:Ignorable="d"
+        d:DesignWidth="1000"
+        d:DesignHeight="800"
         x:Class="GreenSwamp.Alpaca.Client.MainWindow"
-        Title="GreenSwamp.Alpaca.Client">
-    Welcome to Avalonia!
+        x:DataType="vm:TelescopeTabViewModel"
+        Title="Telescope Tab Debug View">
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16" Spacing="10">
+            <TextBlock FontSize="20" FontWeight="Bold" Text="TelescopeTabViewModel" />
+            <TextBlock Opacity="0.7" Text="Simple screen showing all exposed properties." />
+
+            <Border Padding="12" BorderThickness="1" CornerRadius="6">
+                <StackPanel Spacing="8">
+                    <TextBlock FontWeight="SemiBold" Text="Telescope connection settings" />
+                    <Grid ColumnDefinitions="140,220,140,220,170,220,*" RowDefinitions="Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Host/IP" />
+                        <TextBox x:Name="HostNameTextBox" Grid.Row="0" Grid.Column="1" Text="127.0.0.1" />
+
+                        <TextBlock Grid.Row="0" Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center" Text="Port" />
+                        <TextBox x:Name="PortTextBox" Grid.Row="0" Grid.Column="3" Text="11111" />
+
+                        <TextBlock Grid.Row="0" Grid.Column="4" Margin="12,0,0,0" VerticalAlignment="Center" Text="Device Number" />
+                        <TextBox x:Name="DeviceNumberTextBox" Grid.Row="0" Grid.Column="5" Text="0" />
+
+                        <Button Grid.Row="0"
+                                Grid.Column="6"
+                                Margin="12,0,0,0"
+                                HorizontalAlignment="Left"
+                                Content="Create Session"
+                                Click="OnCreateSessionClick" />
+
+                        <TextBlock x:Name="ConnectionInputStatusTextBlock"
+                                   Grid.Row="1"
+                                   Grid.Column="0"
+                                   Grid.ColumnSpan="7"
+                                   Opacity="0.8" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <WrapPanel Orientation="Horizontal" ItemHeight="32" ItemWidth="140">
+                <Button Content="Connect" Command="{Binding ConnectCommand}" />
+                <Button Content="Disconnect" Command="{Binding DisconnectCommand}" />
+                <Button Content="Find Home" Command="{Binding FindHomeCommand}" />
+                <Button Content="Park" Command="{Binding ParkCommand}" />
+                <Button Content="Abort" Command="{Binding AbortCommand}" />
+            </WrapPanel>
+
+            <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                <TextBlock Grid.Row="0" Grid.Column="0" FontWeight="SemiBold" Text="Property" />
+                <TextBlock Grid.Row="0" Grid.Column="1" FontWeight="SemiBold" Text="Value" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Altitude" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Altitude}" />
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Azimuth" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Azimuth}" />
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="Declination" />
+                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Declination}" />
+
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="RightAscension" />
+                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding RightAscension}" />
+
+                <TextBlock Grid.Row="5" Grid.Column="0" Text="SideOfPier" />
+                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SideOfPier}" />
+
+                <TextBlock Grid.Row="6" Grid.Column="0" Text="IsSlewing" />
+                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding IsSlewing}" />
+
+                <TextBlock Grid.Row="7" Grid.Column="0" Text="IsTracking" />
+                <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding IsTracking}" />
+
+                <TextBlock Grid.Row="8" Grid.Column="0" Text="AtHome" />
+                <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding AtHome}" />
+
+                <TextBlock Grid.Row="9" Grid.Column="0" Text="AtPark" />
+                <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding AtPark}" />
+
+                <TextBlock Grid.Row="10" Grid.Column="0" Text="IsPulseGuiding" />
+                <TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding IsPulseGuiding}" />
+
+                <TextBlock Grid.Row="11" Grid.Column="0" Text="UtcDate" />
+                <TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding UtcDate}" />
+
+                <TextBlock Grid.Row="12" Grid.Column="0" Text="StateTimeStamp" />
+                <TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding StateTimeStamp}" />
+
+                <TextBlock Grid.Row="13" Grid.Column="0" Text="SiteLatitude" />
+                <TextBlock Grid.Row="13" Grid.Column="1" Text="{Binding SiteLatitude}" />
+
+                <TextBlock Grid.Row="14" Grid.Column="0" Text="SiteLongitude" />
+                <TextBlock Grid.Row="14" Grid.Column="1" Text="{Binding SiteLongitude}" />
+
+                <TextBlock Grid.Row="15" Grid.Column="0" Text="SiteElevation" />
+                <TextBlock Grid.Row="15" Grid.Column="1" Text="{Binding SiteElevation}" />
+
+                <TextBlock Grid.Row="16" Grid.Column="0" Text="AlignmentMode" />
+                <TextBlock Grid.Row="16" Grid.Column="1" Text="{Binding AlignmentMode}" />
+
+                <TextBlock Grid.Row="17" Grid.Column="0" Text="TrackingRate" />
+                <TextBlock Grid.Row="17" Grid.Column="1" Text="{Binding TrackingRate}" />
+
+                <TextBlock Grid.Row="18" Grid.Column="0" Text="TargetRightAscension" />
+                <TextBlock Grid.Row="18" Grid.Column="1" Text="{Binding TargetRightAscension}" />
+
+                <TextBlock Grid.Row="19" Grid.Column="0" Text="TargetDeclination" />
+                <TextBlock Grid.Row="19" Grid.Column="1" Text="{Binding TargetDeclination}" />
+
+                <TextBlock Grid.Row="20" Grid.Column="0" Text="GreenSwamp" />
+                <TextBlock Grid.Row="20" Grid.Column="1" Text="{Binding GreenSwamp}" />
+
+                <TextBlock Grid.Row="21" Grid.Column="0" Text="ConnectionState" />
+                <TextBlock Grid.Row="21" Grid.Column="1" Text="{Binding ConnectionState}" />
+
+                <TextBlock Grid.Row="22" Grid.Column="0" Text="IsConnected" />
+                <TextBlock Grid.Row="22" Grid.Column="1" Text="{Binding IsConnected}" />
+
+                <TextBlock Grid.Row="23" Grid.Column="0" Text="StatusMessage" />
+                <TextBlock Grid.Row="23" Grid.Column="1" Text="{Binding StatusMessage}" />
+
+                <TextBlock Grid.Row="24" Grid.Column="0" Text="Capabilities.CanFindHome" />
+                <TextBlock Grid.Row="24" Grid.Column="1" Text="{Binding Capabilities.CanFindHome}" />
+
+                <TextBlock Grid.Row="25" Grid.Column="0" Text="Capabilities.CanPark" />
+                <TextBlock Grid.Row="25" Grid.Column="1" Text="{Binding Capabilities.CanPark}" />
+
+                <TextBlock Grid.Row="26" Grid.Column="0" Text="Capabilities.CanUnpark" />
+                <TextBlock Grid.Row="26" Grid.Column="1" Text="{Binding Capabilities.CanUnpark}" />
+
+                <TextBlock Grid.Row="27" Grid.Column="0" Text="Capabilities.CanSetPark" />
+                <TextBlock Grid.Row="27" Grid.Column="1" Text="{Binding Capabilities.CanSetPark}" />
+
+                <TextBlock Grid.Row="28" Grid.Column="0" Text="Capabilities.CanPulseGuide" />
+                <TextBlock Grid.Row="28" Grid.Column="1" Text="{Binding Capabilities.CanPulseGuide}" />
+
+                <TextBlock Grid.Row="29" Grid.Column="0" Text="Capabilities.CanSetTracking" />
+                <TextBlock Grid.Row="29" Grid.Column="1" Text="{Binding Capabilities.CanSetTracking}" />
+
+                <TextBlock Grid.Row="30" Grid.Column="0" Text="Capabilities.CanSetDeclinationRate" />
+                <TextBlock Grid.Row="30" Grid.Column="1" Text="{Binding Capabilities.CanSetDeclinationRate}" />
+
+                <TextBlock Grid.Row="31" Grid.Column="0" Text="Capabilities.CanSetRightAscensionRate" />
+                <TextBlock Grid.Row="31" Grid.Column="1" Text="{Binding Capabilities.CanSetRightAscensionRate}" />
+
+                <TextBlock Grid.Row="32" Grid.Column="0" Text="Capabilities.CanSetGuideRates" />
+                <TextBlock Grid.Row="32" Grid.Column="1" Text="{Binding Capabilities.CanSetGuideRates}" />
+
+                <TextBlock Grid.Row="33" Grid.Column="0" Text="Capabilities.CanSetPierSide" />
+                <TextBlock Grid.Row="33" Grid.Column="1" Text="{Binding Capabilities.CanSetPierSide}" />
+
+                <TextBlock Grid.Row="34" Grid.Column="0" Text="Capabilities.CanSlew" />
+                <TextBlock Grid.Row="34" Grid.Column="1" Text="{Binding Capabilities.CanSlew}" />
+
+                <TextBlock Grid.Row="35" Grid.Column="0" Text="Capabilities.CanSlewAsync" />
+                <TextBlock Grid.Row="35" Grid.Column="1" Text="{Binding Capabilities.CanSlewAsync}" />
+
+                <TextBlock Grid.Row="36" Grid.Column="0" Text="Capabilities.CanSlewAltAz" />
+                <TextBlock Grid.Row="36" Grid.Column="1" Text="{Binding Capabilities.CanSlewAltAz}" />
+
+                <TextBlock Grid.Row="37" Grid.Column="0" Text="Capabilities.CanSlewAltAzAsync" />
+                <TextBlock Grid.Row="37" Grid.Column="1" Text="{Binding Capabilities.CanSlewAltAzAsync}" />
+
+                <TextBlock Grid.Row="38" Grid.Column="0" Text="Capabilities.CanSync" />
+                <TextBlock Grid.Row="38" Grid.Column="1" Text="{Binding Capabilities.CanSync}" />
+
+                <TextBlock Grid.Row="39" Grid.Column="0" Text="Capabilities.CanSyncAltAz" />
+                <TextBlock Grid.Row="39" Grid.Column="1" Text="{Binding Capabilities.CanSyncAltAz}" />
+
+                <TextBlock Grid.Row="40" Grid.Column="0" Text="Capabilities.IsGreenSwampClass" />
+                <TextBlock Grid.Row="40" Grid.Column="1" Text="{Binding Capabilities.IsGreenSwampClass}" />
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
 </Window>

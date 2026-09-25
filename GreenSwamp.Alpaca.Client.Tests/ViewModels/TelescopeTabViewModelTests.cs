@@ -116,7 +116,15 @@ public class TelescopeTabViewModelTests
             AtPark = false,
             IsPulseGuiding = true,
             UtcDate = utcDate,
-            TimeStamp = timeStamp
+            TimeStamp = timeStamp,
+            SiteLatitude = 51.5,
+            SiteLongitude = -0.12,
+            SiteElevation = 35,
+            AlignmentMode = GreenSwampAlignmentMode.GermanPolar,
+            TrackingRate = GreenSwampDriveRate.Lunar,
+            TargetRightAscension = 12.34,
+            TargetDeclination = -22.2,
+            GreenSwamp = new GreenSwampTelescopeState { MountName = "GS Sim" }
         };
 
         session.RaiseStateUpdated(state);
@@ -133,6 +141,15 @@ public class TelescopeTabViewModelTests
         vm.IsPulseGuiding.Should().BeTrue();
         vm.UtcDate.Should().Be(utcDate);
         vm.StateTimeStamp.Should().Be(timeStamp);
+        vm.SiteLatitude.Should().Be(51.5);
+        vm.SiteLongitude.Should().Be(-0.12);
+        vm.SiteElevation.Should().Be(35);
+        vm.AlignmentMode.Should().Be(GreenSwampAlignmentMode.GermanPolar);
+        vm.TrackingRate.Should().Be(GreenSwampDriveRate.Lunar);
+        vm.TargetRightAscension.Should().Be(12.34);
+        vm.TargetDeclination.Should().Be(-22.2);
+        vm.GreenSwamp.Should().NotBeNull();
+        vm.GreenSwamp!.MountName.Should().Be("GS Sim");
     }
 
     [Fact]

@@ -2,6 +2,9 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using GreenSwamp.Alpaca.Client.ViewModels;
+using GreenSwamp.Alpaca.Telescope.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GreenSwamp.Alpaca.Client;
 
@@ -23,9 +26,16 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            // Prototype UI (MainViewModel/tab binding) is explicitly deferred to a later stage;
-            // _services is retained for that future work. For now the window has no DataContext.
-            desktop.MainWindow = new MainWindow();
+            if (_services is null)
+            {
+                desktop.MainWindow = new MainWindow();
+            }
+            else
+            {
+                var factory = _services.GetRequiredService<TelescopeTabViewModelFactory>();
+                var viewModel = factory.Create(new TelescopeConnectionDescriptor("127.0.0.1", 11111, 0));
+                desktop.MainWindow = new MainWindow(factory, viewModel);
+            }
         }
 
         base.OnFrameworkInitializationCompleted();

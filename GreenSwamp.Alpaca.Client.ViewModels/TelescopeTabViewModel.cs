@@ -53,6 +53,30 @@ public sealed partial class TelescopeTabViewModel : ObservableObject, IAsyncDisp
     private DateTimeOffset? _stateTimeStamp;
 
     [ObservableProperty]
+    private double _siteLatitude;
+
+    [ObservableProperty]
+    private double _siteLongitude;
+
+    [ObservableProperty]
+    private double _siteElevation;
+
+    [ObservableProperty]
+    private GreenSwampAlignmentMode _alignmentMode;
+
+    [ObservableProperty]
+    private GreenSwampDriveRate _trackingRate;
+
+    [ObservableProperty]
+    private double _targetRightAscension;
+
+    [ObservableProperty]
+    private double _targetDeclination;
+
+    [ObservableProperty]
+    private GreenSwampTelescopeState? _greenSwamp;
+
+    [ObservableProperty]
     private TelescopeConnectionState _connectionState = TelescopeConnectionState.Disconnected;
 
     [ObservableProperty]
@@ -114,6 +138,14 @@ public sealed partial class TelescopeTabViewModel : ObservableObject, IAsyncDisp
             IsPulseGuiding = state.IsPulseGuiding;
             UtcDate = state.UtcDate;
             StateTimeStamp = state.TimeStamp;
+            SiteLatitude = state.SiteLatitude;
+            SiteLongitude = state.SiteLongitude;
+            SiteElevation = state.SiteElevation;
+            AlignmentMode = state.AlignmentMode;
+            TrackingRate = state.TrackingRate;
+            TargetRightAscension = state.TargetRightAscension;
+            TargetDeclination = state.TargetDeclination;
+            GreenSwamp = state.GreenSwamp;
         });
 
     private void OnConnectionStatusChanged(object? sender, TelescopeConnectionStatusChangedEventArgs e) =>

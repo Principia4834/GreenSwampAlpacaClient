@@ -25,6 +25,9 @@ internal interface IAlpacaTelescopeProvider : IAsyncDisposable
     TelescopeCapabilities GetCapabilities();
 }
 
+/// <summary>
+/// Wraps ASCOM.Alpaca.Clients.AlpacaTelescope (ITelescopeV4) - the always-present Alpaca REST
+/// </summary>
 internal sealed class AlpacaTelescopeProvider : IAlpacaTelescopeProvider
 {
     private static readonly TimeSpan SlowSupplementalPollInterval = TimeSpan.FromSeconds(30);
@@ -115,17 +118,27 @@ internal sealed class AlpacaTelescopeProvider : IAlpacaTelescopeProvider
         return ValueTask.CompletedTask;
     }
 
+    /// <summary>
+    /// Polls the supplemental state (site location, alignment mode, tracking rate, target RA/Dec) if
+    /// due based on the polling intervals and current slewing state.
+    /// </summary>
+    /// <param name="now">The current time.</param>
+    /// <param name="currentSlewing">Indicates whether the telescope is currently slewing.</param>
     private void PollSupplementalStateIfDue(DateTimeOffset now, bool currentSlewing)
     {
         if (ShouldPollSlowSupplemental(now))
         {
             _supplementalState = _supplementalState with
             {
-                SiteLatitude = _client.SiteLatitude,
-                SiteLongitude = _client.SiteLongitude,
-                SiteElevation = _client.SiteElevation,
-                AlignmentMode = MapAlignmentMode(_client.AlignmentModeValue),
-                TrackingRate = MapDriveRate(_client.TrackingRateValue)
+                SiteLatitude = ReadOptionalSupplemental(() => _client.SiteLatitude, _supplementalState.SiteLatitude),
+                SiteLongitude = ReadOptionalSupplemental(() => _client.SiteLongitude, _supplementalState.SiteLongitude),
+                SiteElevation = ReadOptionalSupplemental(() => _client.SiteElevation, _supplementalState.SiteElevation),
+                AlignmentMode = ReadOptionalSupplemental(
+                    () => MapAlignmentMode(_client.AlignmentModeValue),
+                    _supplementalState.AlignmentMode),
+                TrackingRate = ReadOptionalSupplemental(
+                    () => MapDriveRate(_client.TrackingRateValue),
+                    _supplementalState.TrackingRate)
             };
             _lastSlowSupplementalPoll = now;
         }
@@ -134,8 +147,12 @@ internal sealed class AlpacaTelescopeProvider : IAlpacaTelescopeProvider
         {
             _supplementalState = _supplementalState with
             {
-                TargetRightAscension = _client.TargetRightAscension,
-                TargetDeclination = _client.TargetDeclination
+                TargetRightAscension = ReadOptionalSupplemental(
+                    () => _client.TargetRightAscension,
+                    _supplementalState.TargetRightAscension),
+                TargetDeclination = ReadOptionalSupplemental(
+                    () => _client.TargetDeclination,
+                    _supplementalState.TargetDeclination)
             };
             _lastTargetSupplementalPoll = now;
         }
@@ -183,6 +200,22 @@ internal sealed class AlpacaTelescopeProvider : IAlpacaTelescopeProvider
         Enum.IsDefined(typeof(GreenSwampDriveRate), value)
             ? (GreenSwampDriveRate)value
             : default;
+
+    private static T ReadOptionalSupplemental<T>(Func<T> read, T fallback)
+    {
+        try
+        {
+            return read();
+        }
+        catch (Exception ex) when (ex is 
+                    ASCOM.PropertyNotImplementedException or 
+                    ASCOM.MethodNotImplementedException or 
+                    ASCOM.NotImplementedException or 
+                    ASCOM.ValueNotSetException)
+        {
+            return fallback;
+        }
+    }
 }
 
 internal interface IAlpacaTelescopeClient : IDisposable
